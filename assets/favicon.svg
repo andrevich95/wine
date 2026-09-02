@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Подорож трансформації">
+  <!-- Wine ground + gold serif «П» — the palette's own hero pairing.
+       The letter is drawn as a path on purpose: SVG favicons do not load
+       webfonts, so <text> would fall back to whatever the OS has. -->
+  <rect width="64" height="64" rx="10" fill="#72101F" />
+  <path
+    fill="#D49838"
+    d="M13 15 H51 V22 H13 Z
+       M18 22 H25 V44 H29 V49 H14 V44 H18 Z
+       M39 22 H46 V44 H50 V49 H35 V44 H39 Z"
+  />
+</svg>

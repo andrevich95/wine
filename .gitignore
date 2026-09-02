@@ -1,0 +1,49 @@
+# ── macOS ────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+
+# ── Windows / Linux ──────────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.directory
+
+# ── Editors & IDEs ───────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.sublime-workspace
+*.swp
+*.swo
+.*.sw?
+*~
+
+# ── Secrets ──────────────────────────────────────────────────────────────
+# This page has no server and no build step, so nothing here is read at
+# runtime — but a deploy script or CI would put credentials in these.
+.env
+.env.*
+!.env.example
+*.pem
+*-key.json
+sheets.access.json
+
+# ── Tooling, if any is ever added ────────────────────────────────────────
+# The site ships as plain HTML/CSS/JS with no dependencies. These exist so
+# that adding a formatter or a bundler later cannot commit its output.
+node_modules/
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+yarn-error.log*
+.eslintcache
+
+# ── Local scratch ────────────────────────────────────────────────────────
+# Throwaway copies of index.html used for screenshotting scroll positions.
+_shot-*.html
+_probe.html
