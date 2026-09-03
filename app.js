@@ -148,6 +148,32 @@
   });
 
   /* ------------------------------------------------------------------------
+     Book excerpt — the quotes CTA swaps itself for the first pages, exactly
+     as the React page did: open hides the button, close brings it back.
+     ------------------------------------------------------------------------ */
+
+  var excerptCta = document.getElementById("excerpt-cta");
+  var excerptToggle = document.getElementById("excerpt-toggle");
+  var excerptPanel = document.getElementById("excerpt-panel");
+  var excerptClose = document.getElementById("excerpt-close");
+
+  function setExcerptOpen(open) {
+    excerptCta.hidden = open;
+    excerptPanel.hidden = !open;
+    excerptToggle.setAttribute("aria-expanded", String(open));
+  }
+
+  excerptToggle.addEventListener("click", function () {
+    setExcerptOpen(true);
+    excerptClose.focus();
+  });
+
+  excerptClose.addEventListener("click", function () {
+    setExcerptOpen(false);
+    excerptToggle.focus();
+  });
+
+  /* ------------------------------------------------------------------------
      Booking form
      ------------------------------------------------------------------------ */
 

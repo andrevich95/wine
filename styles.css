@@ -800,6 +800,73 @@ select {
   white-space: pre-line;
 }
 
+/* The book excerpt the quotes CTA reveals. Hidden until then via [hidden]. */
+
+.excerpt {
+  margin-top: 3.5rem;
+  text-align: left;
+}
+
+.excerpt__card {
+  margin-inline: auto;
+  max-width: 56rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--card);
+  padding: 2rem;
+  box-shadow:
+    0 25px 50px -12px var(--wine-deep-20),
+    0 8px 10px -6px var(--wine-deep-15);
+}
+
+.excerpt__title {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--wine);
+}
+
+.excerpt__body {
+  font-family: Georgia, var(--font-serif);
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: var(--foreground);
+}
+
+.excerpt__body > * + * {
+  margin-top: 1.25rem;
+}
+
+.excerpt__close-row {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
+.excerpt__close {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  transition: color 200ms;
+}
+
+.excerpt__close:hover {
+  color: var(--wine);
+  text-decoration: underline;
+}
+
+.excerpt__close:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+
 /* --------------------------------------------------------------------------
    10. About me
    -------------------------------------------------------------------------- */
@@ -1239,6 +1306,18 @@ select {
 
   .quotes__list > * + * {
     margin-top: 7rem;
+  }
+
+  .excerpt__card {
+    padding: 3.5rem;
+  }
+
+  .excerpt__title {
+    font-size: 1.875rem;
+  }
+
+  .excerpt__body {
+    font-size: 1.05rem;
   }
 
   .register {
