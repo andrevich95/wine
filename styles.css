@@ -1326,38 +1326,12 @@ select {
   color: var(--muted-foreground);
 }
 
-.checkout__thanks[hidden],
-.checkout__form[hidden],
 .checkout__error[hidden],
 .checkout__secure[hidden],
 .step__note[hidden],
 .osum__row[hidden],
 .cf[hidden] {
   display: none;
-}
-
-.checkout__thanks {
-  margin-top: 3rem;
-  max-width: 40rem;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--coral);
-  border-radius: var(--radius-lg);
-  background-color: var(--ivory);
-  padding: 2rem;
-}
-
-.checkout__thanks-title {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 2rem;
-  color: var(--burgundy);
-}
-
-.checkout__thanks-body {
-  margin: 1rem 0 0;
-  font-size: 17px;
-  line-height: 1.65;
-  color: var(--chocolate);
 }
 
 .checkout__form {

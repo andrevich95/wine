@@ -87,11 +87,6 @@ window.CHECKOUT_COPY = {
     pay: "Перейти до оплати",
     paying: "Зачекайте…",
     secure: "Посилання на електронну книгу надходить лише на ваш email після підтвердження оплати.",
-    thanksTitle: "Дякуємо!",
-    thanksPhysical:
-      "Ваше замовлення отримано. Ми напишемо вам на email, щоб підтвердити деталі та домовитися про оплату й доставку.",
-    thanksEbook:
-      "Ваше замовлення отримано. Ми напишемо вам на email, щоб підтвердити його та домовитися про оплату — електронну книгу буде надіслано після підтвердження оплати.",
     priceMissing: "Ціну цього видання ще не встановлено — оформити замовлення поки неможливо.",
     sendError: "Не вдалося звʼязатися із сервісом оплати. Нічого не списано — спробуйте ще раз.",
     checkFields: "Перевірте, будь ласка, позначені поля.",
@@ -179,11 +174,6 @@ window.CHECKOUT_COPY = {
     pay: "Proceed to Payment",
     paying: "Please wait…",
     secure: "The e-book link is only ever sent to your email, after payment is confirmed.",
-    thanksTitle: "Thank you!",
-    thanksPhysical:
-      "Your order has been received. We’ll email you to confirm the details and arrange payment and delivery.",
-    thanksEbook:
-      "Your order has been received. We’ll email you to confirm it and arrange payment — the e-book is sent once payment is confirmed.",
     priceMissing: "The price of this edition hasn’t been set yet, so it can’t be ordered for now.",
     sendError: "We couldn’t reach the payment service. Nothing was charged — please try again.",
     checkFields: "Please check the highlighted fields.",

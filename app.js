@@ -763,7 +763,6 @@
   if (coForm && window.CHECKOUT_COPY) {
     var coPay = document.getElementById("co-pay");
     var coError = document.getElementById("co-error");
-    var coThanks = document.getElementById("co-thanks");
     var coQuantity = document.getElementById("co-quantity");
     var coQuantityWrap = document.getElementById("co-quantity-wrap");
     var coPhoneWrap = document.getElementById("co-phone-wrap");
@@ -779,7 +778,6 @@
     var co = {
       langTouched: false,
       sending: false,
-      sent: null,
     };
 
     function t(key) {
@@ -928,11 +926,6 @@
       buildCountry();
       buildShipping();
       coPay.textContent = co.sending ? t("paying") : t("pay");
-      if (!coThanks.hidden) {
-        document.getElementById("co-thanks-body").textContent = t(
-          co.sent === "ebook" ? "thanksEbook" : "thanksPhysical"
-        );
-      }
       clearErrors();
       render();
     }
@@ -1119,9 +1112,7 @@
         body: body.toString(),
       })
         .then(function () {
-          co.sent = order.format;
-          showThanks();
-          openPayment(order);
+          openPayment(order); /* the form stays as it is, button locked, while we leave */
         })
         .catch(function () {
           setSending(false);
@@ -1135,16 +1126,6 @@
       var url = new URL(CHECKOUT.paymentUrl);
       url.searchParams.set("prefilled_email", order.customer.email);
       window.location.assign(url.toString());
-    }
-
-    /* The form is replaced, not reset, so an order can't be sent twice. */
-    function showThanks() {
-      coForm.hidden = true;
-      document.getElementById("co-thanks-body").textContent = t(
-        co.sent === "ebook" ? "thanksEbook" : "thanksPhysical"
-      );
-      coThanks.hidden = false;
-      scrollToSection("buy");
     }
 
     coForm.addEventListener("submit", function (event) {
