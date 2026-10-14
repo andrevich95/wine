@@ -4,29 +4,29 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Подорож трансформації — книга і вечір у VINO&amp;VINO</title>
+    <title>Подорож трансформацій — книга Альони Коваленко</title>
     <meta
       name="description"
-      content="«Подорож трансформації» — книга та один вечір у VINO&amp;VINO: лише 25 місць, п'ять вин і свої люди. 31 жовтня 2026, початок зустрічі — 15:30."
+      content="«Подорож трансформацій» — чесна історія про втому, пошук внутрішньої опори й маленькі зміни, які з часом стають великими."
     />
     <meta name="author" content="Альона Коваленко" />
 
-    <meta property="og:title" content="Подорож трансформації" />
-    <meta property="og:description" content="Одна книга. Один вечір. П'ять вин. Свої люди." />
-    <meta property="og:image" content="assets/hero-vineyard.jpg" />
+    <meta property="og:title" content="Подорож трансформацій" />
+    <meta property="og:description" content="Чесна історія про втому, пошук внутрішньої опори й маленькі зміни." />
+    <meta property="og:image" content="assets/cover.png" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="icon" href="assets/favicon.ico" sizes="32x32" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-    <meta name="theme-color" content="#1D0C0A" />
+    <meta name="theme-color" content="#281918" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&amp;family=Inter+Tight:wght@400;500;600&amp;display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&amp;family=Inter+Tight:wght@400;500;600&amp;display=swap"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -36,16 +36,19 @@
       <!-- ============================ NAV ============================ -->
       <header class="nav" id="site-nav">
         <div class="nav__inner">
-          <a class="nav__brand" href="#top" data-scroll="top">Подорож трансформації</a>
+          <a class="nav__brand" href="#top" data-scroll="top" data-i18n="bookTitle">Подорож трансформацій</a>
 
-          <nav class="nav__links" aria-label="Основна навігація">
-            <a href="#book" data-scroll="book">Книга</a>
-            <a href="#about" data-scroll="about">Про мене</a>
-            <a href="#day" data-scroll="day">Цей вечір</a>
-            <a href="#community" data-scroll="community">Спільнота</a>
+          <nav class="nav__links" aria-label="Основна навігація" data-i18n-aria="navAria">
+            <a href="#book" data-scroll="book" data-i18n="navBook">Про книгу</a>
+            <a href="#about" data-scroll="about" data-i18n="navAuthor">Автор</a>
           </nav>
 
-          <button type="button" class="btn btn--nav" id="nav-reserve">Забронювати місце</button>
+          <div class="lang nav__lang" role="group" aria-label="Мова / Language">
+            <button type="button" class="lang__btn" data-lang="UA" aria-pressed="true">UA</button>
+            <button type="button" class="lang__btn" data-lang="EN" aria-pressed="false">EN</button>
+          </div>
+
+          <button type="button" class="btn btn--nav" id="nav-buy">Купити книгу</button>
 
           <button
             type="button"
@@ -91,431 +94,275 @@
           </button>
         </div>
 
-        <nav class="nav__mobile" id="mobile-navigation" aria-label="Мобільна навігація" hidden>
+        <nav class="nav__mobile" id="mobile-navigation" aria-label="Мобільна навігація" data-i18n-aria="navAria" hidden>
           <div class="nav__mobile-inner">
-            <a href="#book" data-scroll="book">Книга</a>
-            <a href="#about" data-scroll="about">Про мене</a>
-            <a href="#day" data-scroll="day">Цей вечір</a>
-            <a href="#community" data-scroll="community">Спільнота</a>
+            <a href="#book" data-scroll="book" data-i18n="navBook">Про книгу</a>
+            <a href="#about" data-scroll="about" data-i18n="navAuthor">Автор</a>
+            <div class="lang nav__lang-mobile" role="group" aria-label="Мова / Language">
+              <button type="button" class="lang__btn" data-lang="UA" aria-pressed="true">UA</button>
+              <button type="button" class="lang__btn" data-lang="EN" aria-pressed="false">EN</button>
+            </div>
           </div>
         </nav>
       </header>
 
       <main>
-        <!-- ============================ HERO ============================ -->
-        <section class="hero" id="top">
-          <img
-            class="hero__image"
-            src="assets/hero-vineyard.jpg"
-            alt="Осінній виноградник у золотому світлі"
-            width="1920"
-            height="1280"
-            fetchpriority="high"
-          />
-          <!-- Layered scrims: vertical falloff for legibility, a wine wash for colour unity,
-               a vignette to pull the eye inward, and grain to take the digital edge off. -->
-          <div class="hero__scrim" aria-hidden="true"></div>
-          <div class="hero__wash" aria-hidden="true"></div>
-          <div class="hero__vignette" aria-hidden="true"></div>
-          <div class="hero__grain" aria-hidden="true"></div>
-
-          <div class="hero__body">
-            <p class="hero__date">31 жовтня 2026</p>
-            <span class="hero__rule" aria-hidden="true"></span>
-            <p class="hero__accent">
-              <span>Одна книга.</span>
-              <span>Один вечір.</span>
-              <span>П'ять вин.</span>
-              <span>Свої люди.</span>
-            </p>
-            <h1 class="hero__title">Вечір, який не повторюють.</h1>
-            <p class="hero__lead">
-              Лише 25 місць. Один стіл. Вино, книги й розмови, для яких зазвичай не вистачає часу.
-            </p>
-            <div class="hero__actions">
-              <button type="button" class="btn btn--solid btn--lift" data-reserve>
-                Забронювати місце
-              </button>
-              <button type="button" class="btn btn--ghost btn--lift" data-order-book>
-                Замовити книгу
-              </button>
-            </div>
-          </div>
-
-          <div class="hero__cue" aria-hidden="true">
-            <span class="hero__cue-track"><span class="hero__cue-spark"></span></span>
-          </div>
-
-          <div class="hero__meta">
-            <ul class="hero__meta-list">
-              <li>Лише 25 місць</li>
-              <li><span class="dot" aria-hidden="true"></span>VINO&amp;VINO</li>
-              <li><span class="dot" aria-hidden="true"></span>Chmielna 73, Warszawa</li>
-            </ul>
-          </div>
-        </section>
-
-        <!-- ============================ BOOK ============================ -->
-        <section class="section section--cream" id="book">
-          <div class="grid-12 grid-12--center wrap-6">
-            <div class="col-5">
+        <!-- ============================ 01 HERO ============================ -->
+        <section class="hero2" id="top">
+          <div class="hero2__inner">
+            <div class="hero2__media">
               <img
-                class="book__image"
-                src="assets/book-wine.jpg"
-                alt="Книга «Подорож трансформації» поруч із келихом вина"
-                width="1200"
-                height="1500"
-                loading="lazy"
+                class="hero2__image"
+                src="assets/cover.png"
+                alt="Обкладинка книги «Подорож трансформацій»" data-i18n-alt="coverAlt"
+                width="1122"
+                height="1402"
               />
             </div>
-            <div class="col-7">
-              <p class="eyebrow eyebrow--wine">Книга</p>
-              <h2 class="section-heading mt-5">
-                «Подорож трансформації» — психологічна проза без пафосу й готових рецептів.
-              </h2>
-              <p class="lead lead--muted mt-7" style="max-width: 42rem">
+            <div class="hero2__copy">
+              <p class="eyebrow eyebrow--wine" data-i18n="authorName">Альона Коваленко</p>
+              <h1 class="hero2__title" data-i18n="bookTitle">Подорож трансформацій</h1>
+              <p class="hero2__subtitle" data-i18n="subtitle">Щоденник маленьких змін і великих усвідомлень</p>
+              <p class="hero2__lead" data-i18n="lead2">
                 Це чесна історія про втому, пошук внутрішньої опори й маленькі зміни, які з часом
                 стають великими.
               </p>
-              <p class="pull-quote mt-10">
-                Це книга, яку читають не для того, щоб знайти готові відповіді, а щоб почути власні.
-              </p>
+              <div class="hero2__actions">
+                <button type="button" class="btn btn--wine btn--lift" data-order-book data-i18n="heroBuy">
+                  Купити книгу
+                </button>
+                <button type="button" class="btn btn--outline-wine btn--lift" data-open-preview data-i18n="heroPreview">
+                  Читати уривок
+                </button>
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- ============================ QUOTES ============================ -->
-        <section class="quotes" aria-labelledby="quotes-title">
-          <div class="quotes__inner">
-            <h2 class="sr-only" id="quotes-title">Уривки з книги</h2>
-            <div class="quotes__list">
-              <blockquote>Подорож не завжди змінює життя.
-Але іноді допомагає почути себе.</blockquote>
-              <blockquote>Іноді найважливіший крок ніхто, крім тебе, навіть не помітить.</blockquote>
-              <blockquote>Я тримаю своє слово перед собою.</blockquote>
-            </div>
-            <p class="eyebrow eyebrow--wine mt-20">
-              ІЗ РЯДКІВ КНИГИ «ПОДОРОЖ ТРАНСФОРМАЦІЇ»
+        <!-- ============================ 02 ABOUT THE BOOK + PREVIEW ============================ -->
+        <section class="section section--sand preview" id="book">
+          <div class="preview__inner">
+            <p class="eyebrow eyebrow--wine" data-i18n="aboutEyebrow">Про книгу</p>
+            <h2 class="section-heading mt-5" data-i18n="aboutHeading">
+              «Подорож трансформацій» — психологічна проза без пафосу й готових рецептів.
+            </h2>
+            <p class="pull-quote pull-quote--plain preview__quote mt-7" data-i18n="aboutQuote">
+              Це книга, яку читають не для того, щоб знайти готові відповіді, а щоб почути власні.
             </p>
-            <div class="mt-8" id="excerpt-cta">
-              <button
-                type="button"
-                class="btn btn--outline-wine"
-                id="excerpt-toggle"
-                aria-expanded="false"
-                aria-controls="excerpt-panel"
-              >
-                Відкрити перші сторінки
+
+        <div class="reader" id="reader" data-state="closed" lang="uk">
+          <div class="reader__stage" id="reader-stage">
+            <div class="book is-closed" id="reader-book">
+              <div class="book__spread" id="reader-spread">
+                <div class="bpage bpage--l" id="page-l"></div>
+                <div class="bpage bpage--r" id="page-r"></div>
+                <div class="leaf" id="leaf" hidden>
+                  <div class="leaf__face leaf__face--front bpage" id="leaf-front"></div>
+                  <div class="leaf__face leaf__face--back bpage" id="leaf-back"></div>
+                </div>
+              </div>
+              <button type="button" class="book__cover" id="reader-cover" aria-expanded="false">
+                <span class="book__cover-front">
+                  <img src="assets/book.png" alt="" width="1060" height="1484" />
+                </span>
+                <span class="book__cover-back" aria-hidden="true"></span>
               </button>
             </div>
+          </div>
 
-            <div class="excerpt" id="excerpt-panel" hidden>
-              <div class="excerpt__card">
-                <h3 class="excerpt__title">Дитинство. Перший спогад</h3>
-                <div class="excerpt__body">
-                  <p>
-                    Постійно згадую яскравий епізод з дитинства – той, що, мабуть, і визначив моє
-                    майбутнє.
-                  </p>
-                  <p>
-                    Мені тоді було роки три. У маминої подруги народилася донька. Ми прийшли в
-                    пологовий будинок, але нас, звісно, всередину не пустили. Подруга не могла
-                    вийти – немовля потребувало багато уваги.
-                  </p>
-                  <p>
-                    Та мама працювала в тій самій будівлі лікарні, тому мала своєрідний карт-бланш.
-                    Вона покликала знайому лікарку-гінекологиню, щоб дізнатися, як пройшли пологи та
-                    чи все добре.
-                  </p>
-                  <p>
-                    Це було ще до 2000-х, тоді ще ніхто не викладав сторіз із пологових, а телефони
-                    лише вчилися дзвонити без дротів. У нашому маленькому містечку навіть слово
-                    «айфон» звучало б як із майбутнього, а нокії з поліфонією стануть розкішшю ще
-                    років через десять.
-                  </p>
-                  <p>Та я пам&rsquo;ятаю зовсім не техніку.</p>
-                  <p>
-                    Я пам&rsquo;ятаю, як моє серце зненацька забилося вдесятеро швидше, коли в
-                    коридор вийшла вона – поважна жінка в білому халаті, спокійна, стримана, з тим
-                    поглядом, що не потребує слів.
-                  </p>
-                  <p>Вона знала, що робить. Знала відповіді. І знала ціну своєму часу.</p>
-                  <p>
-                    У той момент я відчула – ось вона, сила. Не та, що кричить чи переконує, а тиха,
-                    впевнена, професійна.
-                  </p>
-                  <p>Далі – у книзі.</p>
+          <p class="reader__hint" id="reader-hint"></p>
+
+          <div class="reader__bar" id="reader-bar" hidden>
+            <button type="button" class="reader__arrow" id="reader-prev">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+            </button>
+            <p class="reader__status" id="reader-status" aria-live="polite"></p>
+            <button type="button" class="reader__arrow" id="reader-next">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+
+          <div class="reader__actions">
+            <button type="button" class="reader__link" id="reader-close" hidden></button>
+            <button type="button" class="reader__link reader__link--buy" id="reader-buy" data-order-book></button>
+          </div>
+        </div>
+          </div>
+        </section>
+
+        <!-- ============================ 03 FEATURED QUOTE ============================ -->
+        <section class="featured" aria-label="Цитата з книги" data-i18n-aria="quoteAria">
+          <blockquote class="featured__inner">
+            <span class="featured__rule" aria-hidden="true"></span>
+            <p class="featured__lead" id="fq-lead">Бо я не хочу прожити правильне життя.</p>
+            <p class="featured__strong" id="fq-strong">Я хочу прожити СВОЄ.</p>
+          </blockquote>
+        </section>
+
+        <!-- ============================ 04 ABOUT THE AUTHOR ============================ -->
+        <section class="section author" id="about">
+          <div class="author__inner">
+            <img
+              class="author__portrait"
+              src="assets/portrait.jpg"
+              alt="Альона Коваленко" data-i18n-alt="portraitAlt"
+              width="1012"
+              height="1555"
+              loading="lazy"
+            />
+            <div class="author__copy">
+              <p class="eyebrow eyebrow--wine" data-i18n="authorEyebrow">Автор</p>
+              <h2 class="section-heading mt-5" data-i18n="authorHeading">Привіт, я — Альона.</h2>
+              <p class="pull-quote pull-quote--plain mt-7" data-i18n="authorQuote">
+                «Подорож трансформацій» народилася не тому, що я знайшла всі відповіді. А тому, що
+                сама довго їх шукала.
+              </p>
+              <p class="lead lead--muted mt-7" data-i18n="authorBio">
+                Senior Test Engineer і психологиня, співорганізаторка жіночих QA-мітапів. Подорожую
+                та бігаю для душі.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================ CHECKOUT ============================ -->
+        <section class="checkout" id="buy" aria-labelledby="co-title">
+          <div class="checkout__inner">
+            <p class="eyebrow eyebrow--wine" data-i18n="eyebrow"></p>
+            <h2 class="section-heading mt-5" id="co-title" data-i18n="title"></h2>
+            <p class="checkout__lead" data-i18n="lead"></p>
+
+
+            <div class="checkout__thanks" id="co-thanks" role="status" hidden>
+              <p class="checkout__thanks-title" data-i18n="thanksTitle"></p>
+              <p class="checkout__thanks-body" id="co-thanks-body"></p>
+            </div>
+
+            <form class="checkout__form" id="co-form" novalidate>
+              <!-- Left: the product -->
+              <div class="checkout__showcase">
+                <img class="checkout__cover" src="assets/cover.png" alt="Обкладинка книги «Подорож трансформацій»" data-i18n-alt="coverAlt" width="1122" height="1402" loading="lazy" />
+                <h3 class="showcase__title" data-i18n="bookTitle">Подорож трансформацій</h3>
+                <p class="showcase__lead" data-i18n="lead2">
+                  Це чесна історія про втому, пошук внутрішньої опори й маленькі зміни, які з часом
+                  стають великими.
+                </p>
+              </div>
+
+              <!-- Right: the order -->
+              <div class="checkout__panel">
+                <div class="step">
+                  <h3 class="step__title"><span class="step__num">1</span><span data-i18n="step1"></span></h3>
+
+                  <fieldset class="options">
+                    <legend class="options__legend" data-i18n="format"></legend>
+                    <div class="cards">
+                      <label class="card">
+                        <input type="radio" name="format" value="physical" checked />
+                        <span class="card__body">
+                          <svg class="card__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5.5A2.5 2.5 0 0 1 8.5 3H25v21H8.5A2.5 2.5 0 0 0 6 26.5z" /><path d="M6 26.5A2.5 2.5 0 0 0 8.5 29H25v-5" /><path d="M11 9h8" /></svg>
+                          <span class="card__title" data-i18n="physical"></span>
+                          <span class="card__note" data-i18n="physicalNote"></span>
+                        </span>
+                      </label>
+                      <label class="card">
+                        <input type="radio" name="format" value="ebook" />
+                        <span class="card__body">
+                          <svg class="card__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="18" height="26" rx="2.5" /><path d="M13 7.5h6" /><path d="M14.5 25h3" /></svg>
+                          <span class="card__title" data-i18n="ebook"></span>
+                          <span class="card__note" data-i18n="ebookNote"></span>
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="options">
+                    <legend class="options__legend" data-i18n="language"></legend>
+                    <div class="pills">
+                      <label class="pill">
+                        <input type="radio" name="language" value="UA" checked />
+                        <span data-i18n="langUA"></span>
+                      </label>
+                      <label class="pill">
+                        <input type="radio" name="language" value="EN" />
+                        <span data-i18n="langEN"></span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <label class="cf cf--qty" id="co-quantity-wrap">
+                    <span class="cf__label" data-i18n="quantity"></span>
+                    <select id="co-quantity" name="quantity"></select>
+                  </label>
                 </div>
-              </div>
 
-              <div class="excerpt__close-row">
-                <button type="button" class="excerpt__close" id="excerpt-close">
-                  Закрити фрагмент
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+                <div class="step">
+                  <h3 class="step__title"><span class="step__num">2</span><span data-i18n="step2"></span></h3>
 
-        <!-- ============================ ABOUT ME ============================ -->
-        <section class="section section--cream" id="about">
-          <div class="wrap-6">
-            <div class="about__split">
-              <img
-                class="about__portrait"
-                src="assets/portrait.jpg"
-                alt="Альона Коваленко з келихом вина"
-                width="1012"
-                height="1555"
-                loading="lazy"
-              />
-              <div>
-                <p class="eyebrow eyebrow--wine">Про мене</p>
-                <h2 class="section-heading mt-5">Привіт, я — Альона.</h2>
-                <p class="pull-quote pull-quote--plain mt-7">
-                  «Подорож трансформації» народилася не тому, що я знайшла всі відповіді. А тому, що
-                  сама довго їх шукала.
-                </p>
-                <p class="lead lead--muted mt-7">
-                  Senior Test Engineer, психологиня, спікерка IT-конференцій та співорганізаторка
-                  жіночих QA-мітапів. Веду корпоративні заняття з йоги, подорожую та бігаю для душі.
-                </p>
-              </div>
-            </div>
-
-            <div class="talks">
-              <p class="eyebrow eyebrow--wine">Виступи</p>
-              <h3 class="talks__heading">Щоб мій голос звучав уже до нашої зустрічі</h3>
-              <div class="talks__grid">
-                <a
-                  class="talk"
-                  href="https://www.youtube.com/watch?v=wLSwpHkYwV0"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div class="talk__thumb">
-                    <img
-                      src="https://img.youtube.com/vi/wLSwpHkYwV0/hqdefault.jpg"
-                      alt="Відеовиступ: Психологія в тестуванні. Вигорання"
-                      loading="lazy"
-                    />
-                  </div>
-                  <h4 class="talk__title">Психологія в тестуванні. Вигорання</h4>
-                </a>
-                <a
-                  class="talk"
-                  href="https://www.youtube.com/watch?v=aZ5TmJxL3_w"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div class="talk__thumb">
-                    <img
-                      src="https://img.youtube.com/vi/aZ5TmJxL3_w/hqdefault.jpg"
-                      alt="Відеовиступ: Екстраверти та інтроверти в ІТ"
-                      loading="lazy"
-                    />
-                  </div>
-                  <h4 class="talk__title">Екстраверти та інтроверти в ІТ</h4>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ============================ THIS EVENING ============================ -->
-        <section class="section section--secondary" id="day">
-          <div class="grid-12 wrap-6">
-            <div class="col-5">
-              <p class="eyebrow eyebrow--wine">Цей вечір</p>
-              <h2 class="section-heading mt-5">Вечір, який не повторюють.</h2>
-              <p class="lead lead--muted mt-7">
-                Це камерна зустріч у VINO&amp;VINO — для тих, хто цінує бездоганні деталі, змістовні
-                знайомства й атмосферу, у якій немає нічого зайвого.
-              </p>
-              <p class="lead lead--muted mt-7">Початок зустрічі — 15:30.</p>
-            </div>
-            <div class="col-7">
-              <p class="eyebrow eyebrow--wine">У програмі вечора</p>
-              <ul class="agenda mt-5">
-                <li>дегустація п'яти вин у супроводі професійного сомельє;</li>
-                <li>гастрономічний супровід, створений до кожного вина;</li>
-                <li>презентація книги та розмова з авторкою у камерному форматі;</li>
-                <li>підписаний примірник книги;</li>
-                <li>
-                  коло людей, яких об'єднують подорожі, самопізнання та любов до хороших історій;
-                </li>
-                <li>
-                  продовження вечора без формальної програми — для тих, хто захоче залишитися
-                  довше.
-                </li>
-              </ul>
-              <p class="lead mt-10">
-                25 місць — свідомо небагато.<br />
-                Щоб цей вечір залишився не подією в календарі, а спогадом.
-              </p>
-              <p class="pull-quote mt-8">
-                Деякі вечори неможливо повторити. Можна лише бути серед тих, хто їх прожив.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- ============================ COMMUNITY ============================ -->
-        <section class="section section--cream" id="community">
-          <div class="grid-12 grid-12--tight wrap-6">
-            <div class="col-5">
-              <p class="eyebrow eyebrow--wine">Хто буде поруч</p>
-              <h2 class="section-heading mt-5">Свої люди, з якими ще не знайомі.</h2>
-            </div>
-            <div class="col-7">
-              <p class="lead lead--muted">
-                За одним столом зберуться ті, кому близькі книги, подорожі, психологія та неспішні
-                розмови. Тут не потрібно вміти знайомитися «правильно»: спільні враження, вино й
-                книга природно дають теми для розмов.
-              </p>
-              <p class="lead lead--muted mt-7">
-                Це камерний вечір, у якому можна бути уважними одне до одного, говорити про важливе
-                або просто побути поруч.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- ============================ REGISTER ============================ -->
-        <section class="register" id="register">
-          <div class="register__inner">
-            <p class="eyebrow eyebrow--gold">Заявка</p>
-            <h2 class="section-heading mt-5">Забронювати місце</h2>
-            <p class="register__lead">
-              Якщо вам хочеться прожити цей вечір саме так — буду рада зустрітися.
-            </p>
-            <p class="register__event">
-              31 жовтня 2026 · 15:30 · VINO&amp;VINO · Chmielna 73, 00-801 Warszawa · Dress code:
-              Total Black
-            </p>
-
-            <div class="register__thanks" id="register-thanks" role="status" hidden>
-              <p class="register__thanks-title">Дякую!</p>
-              <!-- TODO: replace with the approved success-message copy when supplied. -->
-              <p class="register__thanks-body">Вашу заявку успішно отримано.</p>
-            </div>
-
-            <form class="booking" id="booking-form" novalidate>
-              <p class="booking__help" id="form-help">Поля зі зірочкою обов'язкові.</p>
-
-              <fieldset class="booking__formats">
-                <legend class="eyebrow eyebrow--faint">Оберіть формат участі *</legend>
-                <div class="booking__format-grid">
-                  <div class="booking__format">
-                    <label class="choice">
-                      <input type="checkbox" id="wants-seats" checked />
-                      <span>Реєстрація на презентацію</span>
+                  <div class="fields">
+                    <label class="cf">
+                      <span class="cf__label" data-i18n="name"></span>
+                      <input id="co-name" name="name" type="text" required maxlength="80" autocomplete="name" data-i18n-placeholder="namePh" />
+                      <span class="cf__error" data-error-for="co-name"></span>
                     </label>
-                    <label class="quantity" id="seats-wrap" for="seats">
-                      <span class="eyebrow eyebrow--faint quantity__label">Кількість місць</span>
-                      <select id="seats" name="seats"></select>
+                    <label class="cf">
+                      <span class="cf__label" data-i18n="email"></span>
+                      <input id="co-email" name="email" type="email" required maxlength="120" autocomplete="email" data-i18n-placeholder="emailPh" />
+                      <span class="cf__error" data-error-for="co-email"></span>
+                    </label>
+                    <label class="cf" id="co-phone-wrap">
+                      <span class="cf__label" data-i18n="phone"></span>
+                      <input id="co-phone" name="phone" type="tel" required maxlength="30" autocomplete="tel" data-i18n-placeholder="phonePh" />
+                      <span class="cf__error" data-error-for="co-phone"></span>
                     </label>
                   </div>
-                  <div class="booking__format">
-                    <label class="choice">
-                      <input type="checkbox" id="wants-books" />
-                      <span>Купити книгу</span>
+
+                  <p class="step__note" id="co-ebook-note" data-i18n="ebookNoteForm" hidden></p>
+
+                  <fieldset class="fields fields--physical" id="co-physical">
+                    <label class="cf" id="co-country-wrap">
+                      <span class="cf__label" data-i18n="country"></span>
+                      <span id="co-country-slot"></span>
+                      <span class="cf__error" data-error-for="co-country"></span>
                     </label>
-                    <label class="quantity" id="books-wrap" for="books" hidden>
-                      <span class="eyebrow eyebrow--faint quantity__label">Кількість книг</span>
-                      <select id="books" name="books"></select>
+                    <label class="cf cf--wide">
+                      <span class="cf__label" data-i18n="address"></span>
+                      <input id="co-address" name="address" type="text" required maxlength="160" autocomplete="street-address" data-i18n-placeholder="addressPh" />
+                      <span class="cf__error" data-error-for="co-address"></span>
                     </label>
-                  </div>
+                    <label class="cf">
+                      <span class="cf__label" data-i18n="city"></span>
+                      <input id="co-city" name="city" type="text" required maxlength="80" autocomplete="address-level2" />
+                      <span class="cf__error" data-error-for="co-city"></span>
+                    </label>
+                    <label class="cf">
+                      <span class="cf__label" data-i18n="postal"></span>
+                      <input id="co-postal" name="postal" type="text" required maxlength="20" autocomplete="postal-code" />
+                      <span class="cf__error" data-error-for="co-postal"></span>
+                    </label>
+                    <label class="cf cf--wide" id="co-shipping-wrap">
+                      <span class="cf__label" data-i18n="shipping"></span>
+                      <select id="co-shipping" name="shipping" required></select>
+                      <span class="cf__error" data-error-for="co-shipping"></span>
+                    </label>
+                    <p class="step__note cf--wide" id="co-shipping-none" data-i18n="shippingNone" hidden></p>
+                  </fieldset>
                 </div>
-              </fieldset>
 
-              <label class="field" for="field-name">
-                <span class="eyebrow eyebrow--faint field__label">Імʼя *</span>
-                <input
-                  id="field-name"
-                  name="name"
-                  type="text"
-                  required
-                  maxlength="80"
-                  autocomplete="name"
-                  placeholder="Як Вас звати?"
-                />
-              </label>
-
-              <label class="field" for="field-email">
-                <span class="eyebrow eyebrow--faint field__label">Email *</span>
-                <input
-                  id="field-email"
-                  name="email"
-                  type="email"
-                  required
-                  maxlength="120"
-                  autocomplete="email"
-                  placeholder="name@example.com"
-                />
-              </label>
-
-              <label class="field" for="field-telegram">
-                <span class="eyebrow eyebrow--faint field__label">Telegram *</span>
-                <input
-                  id="field-telegram"
-                  name="telegram"
-                  type="text"
-                  required
-                  maxlength="80"
-                  autocomplete="tel"
-                  aria-describedby="field-telegram-helper"
-                  placeholder="@username або +48…"
-                />
-                <span class="field__helper" id="field-telegram-helper">
-                  Щоб додати вас до спільної групи вечора
-                </span>
-              </label>
-
-              <label class="field" for="field-instagram">
-                <span class="eyebrow eyebrow--faint field__label">Instagram (необов'язково)</span>
-                <input
-                  id="field-instagram"
-                  name="instagram"
-                  type="text"
-                  maxlength="80"
-                  autocomplete="username"
-                  placeholder="ваш нік в Instagram"
-                />
-              </label>
-
-              <div class="summary">
-                <p class="eyebrow eyebrow--gold">Ваш вибір</p>
-
-                <dl class="summary__list" id="summary-list">
-                  <div class="summary__row">
-                    <dt>Формат</dt>
-                    <dd id="summary-format"></dd>
-                  </div>
-                  <div class="summary__row" id="summary-seats-row">
-                    <dt>Кількість місць</dt>
-                    <dd id="summary-seats"></dd>
-                  </div>
-                  <div class="summary__row" id="summary-books-row">
-                    <dt>Кількість книг</dt>
-                    <dd id="summary-books"></dd>
-                  </div>
-                  <div class="summary__row summary__row--total">
-                    <dt>Разом</dt>
-                    <dd id="summary-total"></dd>
-                  </div>
-                </dl>
-
-                <p class="summary__empty" id="summary-empty" hidden>
-                  Позначте «Реєстрація на презентацію», «Купити книгу» або обидва варіанти.
-                </p>
-              </div>
-
-              <div class="booking__submit" aria-live="polite">
-                <p class="booking__error" id="booking-error" hidden></p>
-                <button type="submit" class="btn btn--submit" id="booking-submit">
-                  Надіслати заявку
-                </button>
+                <div class="step step--summary">
+                  <h3 class="step__title" id="co-summary-title"><span class="step__num">3</span><span data-i18n="step3"></span></h3>
+                  <dl class="osum" aria-live="polite">
+                    <div class="osum__row"><dt data-i18n="sFormat"></dt><dd id="os-format"></dd></div>
+                    <div class="osum__row"><dt data-i18n="sLanguage"></dt><dd id="os-language"></dd></div>
+                    <div class="osum__row"><dt data-i18n="sQuantity"></dt><dd id="os-quantity"></dd></div>
+                    <div class="osum__row"><dt data-i18n="sUnit"></dt><dd id="os-unit"></dd></div>
+                    <div class="osum__row" id="os-delivery-row"><dt data-i18n="sDelivery"></dt><dd id="os-delivery"></dd></div>
+                    <div class="osum__row osum__row--total"><dt data-i18n="sTotal"></dt><dd id="os-total"></dd></div>
+                  </dl>
+                  <p class="checkout__error" id="co-error" role="alert" hidden></p>
+                  <button type="submit" class="btn btn--pay" id="co-pay" data-i18n="pay"></button>
+                  <p class="checkout__secure" id="co-secure" data-i18n="secure" hidden></p>
+                </div>
               </div>
             </form>
           </div>
@@ -525,36 +372,23 @@
       <!-- ============================ FOOTER ============================ -->
       <footer class="footer">
         <div class="footer__inner">
-          <p class="footer__note">
-            Я дуже хочу, щоб ця презентація була не про мене. А про людей, які цього вечора
-            зберуться в одному місці. Якщо після цієї суботи ви повернетесь додому з відчуттям, що
-            знайшли нову книгу, нові думки або хоча б одну близьку людину — значить, усе було
-            недарма.
-          </p>
-          <nav class="footer__links" aria-label="Контакти">
-            <a href="https://t.me/Alona_Kovalenko" target="_blank" rel="noopener noreferrer">
-              Telegram
-            </a>
-            <a
-              href="https://www.instagram.com/alona_kovalenkooo/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Instagram
-            </a>
-            <a
-              href="https://www.linkedin.com/in/alona-kovalenko-qa-engineer2402"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              LinkedIn
-            </a>
-            <a href="mailto:alyona.kovalenko24@gmail.com">Email</a>
+          <div class="footer__brand">
+            <p class="footer__title" data-i18n="bookTitle">Подорож трансформацій</p>
+            <p class="footer__author" data-i18n="authorName">Альона Коваленко</p>
+          </div>
+          <nav class="footer__links" aria-label="Соцмережі та контакти" data-i18n-aria="footerAria">
+            <a href="https://t.me/Alona_Kovalenko" target="_blank" rel="noopener noreferrer">Telegram</a>
+            <a href="https://www.instagram.com/alona_kovalenkooo/" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://www.linkedin.com/in/alona-kovalenko-qa-engineer2402" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="mailto:alyona.kovalenko24@gmail.com">alyona.kovalenko24@gmail.com</a>
           </nav>
         </div>
+        <p class="footer__copy" data-i18n="copyright">© 2026 Альона Коваленко</p>
       </footer>
     </div>
 
+    <script src="book-content.js" defer></script>
+    <script src="checkout-content.js" defer></script>
     <script src="app.js" defer></script>
   </body>
 </html>
