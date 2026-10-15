@@ -6,64 +6,28 @@
 (function () {
   "use strict";
 
-  /* ------------------------------------------------------------------------
-     Checkout — the only form on the page.
-
-     Everything a shop owner has to supply lives here. Nothing below is a
-     guess: a price of `null` means "not set yet" and the page says so.
-
-       variants[…].price        unit price in the variant's own `currency`
-                                (number, or null = not set yet)
-       shipping.countries       [{ code: "PL", label: { UA: "…", EN: "…" } }]
-                                empty → delivery country is a free-text field
-       shipping.methods         [{ id, label: { UA, EN },
-                                   cost: { UAH: 150, EUR: 5 },   // per currency
-                                   countries: ["PL"] — omit for everywhere }]
-                                empty → "shipping to be confirmed"
-       paymentUrl               Stripe Payment Link opened right after the order
-                                has been submitted. One link for every edition
-                                for now (it is a TEST-mode link).
-       orderForm                the Google Form every order is submitted to:
-                                its formResponse URL, the entry.<id> of each
-                                question, and the exact option text of the two
-                                multiple-choice questions.
-     ------------------------------------------------------------------------ */
+  /* Phase 1 checkout configuration. Prices are per book; null means unknown.
+     Product language and delivery destination are deliberately independent. */
   var CHECKOUT = {
-    maxQuantity: 10,
     variants: {
       "physical-UA": { id: "physical-ua", format: "physical", language: "UA", currency: "UAH", price: 1000 },
-      "physical-EN": { id: "physical-en", format: "physical", language: "EN", currency: "EUR", price: 35 },
       "ebook-UA": { id: "ebook-ua", format: "ebook", language: "UA", currency: "UAH", price: 800 },
-      "ebook-EN": { id: "ebook-en", format: "ebook", language: "EN", currency: "EUR", price: 25 },
+      "physical-EN": { id: "physical-en", format: "physical", language: "EN", currency: "EUR", price: 35 },
     },
-    shipping: { countries: [], methods: [] },
-    paymentUrl: "https://buy.stripe.com/test_fZucN6f3B1ujbYPdsu2VG00",
-
-    /* Read from the live form (…/viewform) on 2026-10-14. The form has no
-       questions for shipping method, price or total, so those are not sent.
-       NB: its language option is literally spelled "Uktainian" — Google drops
-       any value that doesn't match an option verbatim, so it is reproduced
-       here. If the typo is fixed in the form, fix it below too. */
-    orderForm: {
-      action:
-        "https://docs.google.com/forms/d/e/1FAIpQLSc8IWq3CWgAxZwEnPX8pIs2lKtqGttoG-Y3lFVru-TMgRXzTA/formResponse",
-      entry: {
-        format: "entry.98576471",
-        language: "entry.1749631150",
-        quantity: "entry.532400014",
-        name: "entry.1111998998",
-        email: "entry.105707259",
-        phone: "entry.1174171599",
-        country: "entry.721268897",
-        address: "entry.500068369",
-        city: "entry.968632309",
-        postal: "entry.819539795",
-      },
-      options: {
-        format: { physical: "Physical", ebook: "E-book" },
-        language: { UA: "Uktainian", EN: "English" },
-      },
-    },
+    cover: "assets/cover.png",
+    // Local country list only; shipping rates and country-specific rules are not configured.
+    countries: [
+      { code: "UA", label: { UA: "Україна", EN: "Ukraine" } },
+      { code: "PL", label: { UA: "Польща", EN: "Poland" } },
+      { code: "DE", label: { UA: "Німеччина", EN: "Germany" } },
+      { code: "CZ", label: { UA: "Чехія", EN: "Czechia" } },
+      { code: "FR", label: { UA: "Франція", EN: "France" } },
+      { code: "IT", label: { UA: "Італія", EN: "Italy" } },
+      { code: "ES", label: { UA: "Іспанія", EN: "Spain" } },
+      { code: "GB", label: { UA: "Велика Британія", EN: "United Kingdom" } },
+      { code: "US", label: { UA: "США", EN: "United States" } },
+      { code: "CA", label: { UA: "Канада", EN: "Canada" } },
+    ],
   };
 
   /* ------------------------------------------------------------------------
@@ -75,7 +39,7 @@
   }
 
   function scrollToSection(id) {
-    var target = document.getElementById(id);
+    var target = document.getElementById(id === "reader" ? "book-preview" : id);
     if (!target) return;
     target.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth" });
   }
@@ -129,19 +93,22 @@
 
   /* ------------------------------------------------------------------------
      Site language — UA / EN. The choice is remembered, and every language-
-     aware component listens for "sitelangchange". Only the book preview has
-     EN copy so far; the rest of the page is still Ukrainian.
+     aware component listens for "sitelangchange". First-time visitors choose
+     a language before browsing; the header switcher stays available after.
      ------------------------------------------------------------------------ */
 
   var Lang = (function () {
     var current = "UA";
+    var saved = null;
     try {
-      if (window.localStorage.getItem("site-lang") === "EN") current = "EN";
+      saved = window.localStorage.getItem("site-lang");
+      if (saved === "UA" || saved === "EN") current = saved;
     } catch (error) {
       /* storage blocked — fall back to UA for this visit */
     }
 
     var buttons = document.querySelectorAll("[data-lang]");
+    var dialog = document.getElementById("language-dialog");
 
     function sync() {
       buttons.forEach(function (button) {
@@ -150,7 +117,7 @@
     }
 
     function set(next) {
-      if (next === current) return;
+      if (next !== "UA" && next !== "EN") return;
       current = next;
       try {
         window.localStorage.setItem("site-lang", current);
@@ -168,6 +135,24 @@
       });
     });
     sync();
+
+    dialog.querySelectorAll("[data-choose-lang]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        set(button.dataset.chooseLang);
+        dialog.close();
+        document.querySelector(".nav__brand").focus({ preventScroll: true });
+      });
+    });
+    dialog.addEventListener("cancel", function (event) {
+      event.preventDefault();
+    });
+    dialog.addEventListener("close", function () {
+      document.documentElement.classList.remove("is-choosing-language");
+    });
+    if (saved !== "UA" && saved !== "EN") {
+      document.documentElement.classList.add("is-choosing-language");
+      dialog.showModal();
+    }
 
     return {
       get: function () {
@@ -204,6 +189,8 @@
     var rLeafBack = document.getElementById("leaf-back");
     var rCover = document.getElementById("reader-cover");
     var rHint = document.getElementById("reader-hint");
+    var rControls = document.getElementById("reader-controls");
+    var rStage = document.getElementById("reader-stage");
     var rBar = document.getElementById("reader-bar");
     var rPrev = document.getElementById("reader-prev");
     var rNext = document.getElementById("reader-next");
@@ -409,9 +396,21 @@
     /* --- sizing ---------------------------------------------------------- */
 
     function computeDims() {
-      var host = reader.clientWidth;
+      var host = rStage.clientWidth;
       var single = host < 800;
-      var maxH = Math.max(420, Math.min(window.innerHeight - (single ? 210 : 150), 780));
+      var viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      var navHeight = document.querySelector(".nav__inner").getBoundingClientRect().height;
+      reader.style.setProperty("--reader-nav-height", navHeight + "px");
+      reader.parentElement.style.setProperty("--reader-nav-height", navHeight + "px");
+      reader.parentElement.style.setProperty("--reader-viewport-height", viewportHeight + "px");
+      var readerStyle = window.getComputedStyle(reader);
+      var stageStyle = window.getComputedStyle(rStage);
+      var controlsHeight = readerStyle.display === "grid" ? 0 : rControls.getBoundingClientRect().height;
+      var spacing = parseFloat(readerStyle.paddingTop) + parseFloat(readerStyle.paddingBottom)
+        + parseFloat(stageStyle.paddingTop) + parseFloat(stageStyle.paddingBottom);
+      // Reserve room for the fixed header, both controls, and breathing space.
+      var maxH = Math.max(64, Math.min(viewportHeight - navHeight
+        - controlsHeight - spacing - 24, 780));
       var ratio = single ? PAGE_RATIO_SINGLE : PAGE_RATIO;
       var pw = single
         ? Math.min(host - 24, maxH * ratio, 460)
@@ -521,7 +520,8 @@
       reader.lang = content().lang;
       reader.setAttribute("role", "region");
       reader.setAttribute("aria-label", ui.region);
-      rHint.textContent = ui.coverHint;
+      document.getElementById("reader-hint-action").textContent = ui.coverAction;
+      document.getElementById("reader-hint-description").textContent = ui.coverHint;
       rCover.setAttribute("aria-label", ui.coverLabel);
       rPrev.setAttribute("aria-label", ui.prev);
       rNext.setAttribute("aria-label", ui.next);
@@ -530,10 +530,16 @@
       document.getElementById("fq-lead").textContent = content().quote.lead;
       document.getElementById("fq-strong").textContent = content().quote.strong;
       document.getElementById("nav-buy").textContent = ui.buy;
+      rs.dims = computeDims();
+      applyDims();
       if (rs.open) repaginate();
     }
 
     function relayout() {
+      if (rs.busy) {
+        scheduleRelayout();
+        return;
+      }
       var next = computeDims();
       if (sameDims(next, rs.dims)) return;
       rs.dims = next;
@@ -558,9 +564,11 @@
         rs.open = true;
         reader.dataset.state = "open";
         rCover.setAttribute("aria-expanded", "true");
+        rHint.setAttribute("aria-expanded", "true");
         rBar.hidden = false;
         rClose.hidden = false;
         rBook.classList.remove("is-closed");
+        scrollToSection("reader");
         window.setTimeout(
           function () {
             rBook.classList.add("is-settled");
@@ -591,6 +599,7 @@
         rs.open = false;
         reader.dataset.state = "closed";
         rCover.setAttribute("aria-expanded", "false");
+        rHint.setAttribute("aria-expanded", "false");
         rBar.hidden = true;
         rClose.hidden = true;
         window.setTimeout(
@@ -690,6 +699,7 @@
     /* --- events ---------------------------------------------------------- */
 
     rCover.addEventListener("click", openBook);
+    rHint.addEventListener("click", openBook);
 
     /* "Read a Preview" in the hero: bring the book into view, then open it. */
     document.querySelectorAll("[data-open-preview]").forEach(function (button) {
@@ -736,15 +746,23 @@
     });
 
     var resizeTimer = 0;
-    window.addEventListener("resize", function () {
+    function scheduleRelayout() {
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(relayout, 150);
-    });
+    }
+    window.addEventListener("resize", scheduleRelayout);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", scheduleRelayout);
+    }
+    if (window.ResizeObserver) {
+      new ResizeObserver(scheduleRelayout).observe(rControls);
+    }
 
     document.addEventListener("sitelangchange", applyLanguage);
 
     if (document.fonts && document.fonts.addEventListener) {
       document.fonts.addEventListener("loadingdone", function () {
+        relayout();
         if (rs.open && !rs.busy) repaginate();
       });
     }
@@ -755,157 +773,151 @@
   }
 
   /* ------------------------------------------------------------------------
-     Checkout form behaviour
+     Checkout — Phase 1, local UI only. No submission or payment integration.
      ------------------------------------------------------------------------ */
 
   var coForm = document.getElementById("co-form");
 
   if (coForm && window.CHECKOUT_COPY) {
-    var coPay = document.getElementById("co-pay");
-    var coError = document.getElementById("co-error");
-    var coQuantity = document.getElementById("co-quantity");
-    var coQuantityWrap = document.getElementById("co-quantity-wrap");
-    var coPhoneWrap = document.getElementById("co-phone-wrap");
-    var coPhone = document.getElementById("co-phone");
-    var coPhysical = document.getElementById("co-physical");
-    var coEbookNote = document.getElementById("co-ebook-note");
-    var coShippingWrap = document.getElementById("co-shipping-wrap");
-    var coShipping = document.getElementById("co-shipping");
-    var coShippingNone = document.getElementById("co-shipping-none");
-    var coCountrySlot = document.getElementById("co-country-slot");
-    var coSecure = document.getElementById("co-secure");
-
     var co = {
-      langTouched: false,
-      sending: false,
+      selectedVariant: "physical-UA",
+      customer: { firstName: "", lastName: "", email: "", phone: "", comment: "" },
+      deliveryCountry: "UA",
+      ukrainianDelivery: { city: "", type: "branch", branch: "" },
+      internationalDelivery: { city: "", street: "", building: "", apartment: "", address2: "", postal: "", region: "" },
     };
+    var variantCards = {};
+    var countryOptions = {};
+    var coCountry = document.getElementById("co-country");
+    var coPay = document.getElementById("co-pay");
 
     function t(key) {
       return window.CHECKOUT_COPY[Lang.get()][key];
     }
 
-    function checked(name) {
-      return coForm.querySelector('input[name="' + name + '"]:checked').value;
-    }
-
     function currentVariant() {
-      return CHECKOUT.variants[checked("format") + "-" + checked("language")];
+      return CHECKOUT.variants[co.selectedVariant];
     }
 
-    function money(amount, currency) {
-      try {
-        return new Intl.NumberFormat(t("locale"), {
-          style: "currency",
-          currency: currency,
-          minimumFractionDigits: amount % 1 ? 2 : 0,
-        }).format(amount);
-      } catch (error) {
-        return amount + " " + currency;
-      }
+    function hasPrice(variant) {
+      return Number.isFinite(variant.price) && variant.price >= 0;
     }
 
-    /* Shipping cost of a method in a given currency; null = not configured. */
-    function shipCost(method, currency) {
-      if (!method || !method.cost || typeof method.cost[currency] !== "number") return null;
-      return method.cost[currency];
+    function priceLabel(variant) {
+      if (!hasPrice(variant)) return t("priceTbd");
+      return new Intl.NumberFormat(t("locale"), {
+        style: "currency",
+        currency: variant.currency,
+        minimumFractionDigits: variant.price % 1 ? 2 : 0,
+      }).format(variant.price);
     }
 
-    function label(entry) {
-      return entry.label[Lang.get()] || entry.label.EN;
+    function deliveryMode() {
+      if (currentVariant().format === "ebook") return "ebook";
+      return co.deliveryCountry === "UA" ? "ukraine" : "international";
     }
 
-    function countryField() {
-      return document.getElementById("co-country");
-    }
-
-    /* --- selects built from config ------------------------------------ */
-
-    function buildQuantity() {
-      var fragment = document.createDocumentFragment();
-      for (var n = 1; n <= CHECKOUT.maxQuantity; n += 1) {
+    /* BookVariantSelector: native radios provide keyboard selection. */
+    function buildVariantSelector() {
+      var host = document.getElementById("co-variants");
+      Object.keys(CHECKOUT.variants).forEach(function (key) {
+        var label = document.createElement("label");
+        label.className = "card";
+        var radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = "variant";
+        radio.value = key;
+        radio.checked = key === co.selectedVariant;
+        var body = document.createElement("span");
+        body.className = "card__body";
+        var language = document.createElement("span");
+        language.className = "card__language";
+        var format = document.createElement("span");
+        format.className = "card__title";
+        var price = document.createElement("span");
+        price.className = "card__price";
+        body.append(language, format, price);
+        label.append(radio, body);
+        host.appendChild(label);
+        variantCards[key] = { radio: radio, language: language, format: format, price: price };
+      });
+      CHECKOUT.countries.forEach(function (country) {
         var option = document.createElement("option");
-        option.value = String(n);
-        option.textContent = String(n);
-        fragment.appendChild(option);
-      }
-      coQuantity.appendChild(fragment);
-    }
-
-    function buildCountry() {
-      var countries = CHECKOUT.shipping.countries;
-      var previous = countryField() ? countryField().value : "";
-      var field;
-      if (countries.length) {
-        field = document.createElement("select");
-        var blank = document.createElement("option");
-        blank.value = "";
-        blank.textContent = t("countrySelect");
-        field.appendChild(blank);
-        countries.forEach(function (country) {
-          var option = document.createElement("option");
-          option.value = country.code;
-          option.textContent = label(country);
-          field.appendChild(option);
-        });
-      } else {
-        field = document.createElement("input");
-        field.type = "text";
-        field.maxLength = 80;
-        field.autocomplete = "country-name";
-        field.placeholder = t("countryPh");
-      }
-      field.id = "co-country";
-      field.name = "country";
-      field.required = true;
-      field.value = previous;
-      coCountrySlot.replaceChildren(field);
-      field.addEventListener("input", onCountryChange);
-      field.addEventListener("change", onCountryChange);
-    }
-
-    function availableMethods() {
-      var country = countryField() ? countryField().value : "";
-      return CHECKOUT.shipping.methods.filter(function (method) {
-        if (!method.countries || !method.countries.length) return true;
-        return method.countries.indexOf(country) !== -1;
+        option.value = country.code;
+        coCountry.appendChild(option);
+        countryOptions[country.code] = option;
       });
     }
 
-    function buildShipping() {
-      var methods = availableMethods();
-      var previous = coShipping.value;
-      coShipping.replaceChildren();
-      var blank = document.createElement("option");
-      blank.value = "";
-      blank.textContent = t("shippingSelect");
-      coShipping.appendChild(blank);
-      methods.forEach(function (method) {
-        var option = document.createElement("option");
-        option.value = method.id;
-        var cost = shipCost(method, currentVariant().currency);
-        option.textContent = label(method) + (cost === null ? "" : " — " + money(cost, currentVariant().currency));
-        coShipping.appendChild(option);
+    /* CustomerInformationForm + delivery groups. Hidden controls are disabled
+       and never required; their values remain only in this in-memory state. */
+    function renderFields() {
+      var mode = deliveryMode();
+      var printed = mode !== "ebook";
+      var visible = { printed: printed, ebook: !printed, ukraine: mode === "ukraine", international: mode === "international" };
+      coForm.querySelectorAll("[data-co-visible]").forEach(function (group) {
+        group.hidden = !visible[group.dataset.coVisible];
+        if (group.tagName === "FIELDSET") group.disabled = group.hidden;
       });
-      var keep = methods.some(function (method) {
-        return method.id === previous;
+      coForm.querySelectorAll("[data-co-field]").forEach(function (field) {
+        var path = field.dataset.coField.split(".");
+        field.value = path.length === 1 ? co[path[0]] : co[path[0]][path[1]];
+        var hidden = Boolean(field.closest("[hidden]"));
+        var placeholder = field.hasAttribute("data-development-placeholder");
+        var rule = field.dataset.requiredWhen;
+        var required = !hidden && (rule === "always" || Boolean(visible[rule]));
+        field.disabled = hidden || placeholder;
+        field.required = required;
+        if (placeholder) field.setAttribute("aria-required", String(required));
+        var label = field.closest(".cf");
+        label.querySelector("[data-required-mark]").hidden = !required;
       });
-      coShipping.value = keep ? previous : methods.length === 1 ? methods[0].id : "";
+      ["co-first-name", "co-last-name"].forEach(function (id) {
+        var input = document.getElementById(id);
+        if (mode === "ukraine") input.setAttribute("aria-describedby", "co-name-hint");
+        else input.removeAttribute("aria-describedby");
+      });
+      // No branch records are fabricated. Both controls stay disabled in Phase 1.
+      var locker = co.ukrainianDelivery.type === "locker";
+      var branch = document.getElementById("co-ua-branch");
+      branch.closest(".cf").querySelector("[data-i18n]").textContent = t(locker ? "lockerLabel" : "branchLabel");
+      branch.options[0].textContent = t(locker ? "lockerPlaceholder" : "branchPlaceholder");
     }
 
-    function selectedMethod() {
-      var id = coShipping.value;
-      var found = null;
-      CHECKOUT.shipping.methods.forEach(function (method) {
-        if (method.id === id) found = method;
-      });
-      return found;
+    /* OrderSummary: one book, with shipping explicitly separate from subtotal. */
+    function renderSummary() {
+      var variant = currentVariant();
+      var mode = deliveryMode();
+      document.getElementById("co-summary-cover").src = variant.cover || CHECKOUT.cover;
+      document.getElementById("os-language").textContent = t(variant.language === "UA" ? "langUA" : "langEN");
+      document.getElementById("os-format").textContent = t(variant.format === "physical" ? "physical" : "ebook");
+      document.getElementById("os-unit").textContent = priceLabel(variant);
+      document.getElementById("os-delivery-row").hidden = mode === "ebook";
+      document.getElementById("os-delivery").textContent = mode === "ebook" ? "" : t(mode === "ukraine" ? "ukraineShipping" : "internationalShipping");
+      document.getElementById("os-subtotal-row").hidden = !hasPrice(variant);
+      document.getElementById("os-subtotal").textContent = hasPrice(variant) ? priceLabel(variant) : "";
+      coPay.disabled = true;
     }
 
-    /* --- copy ----------------------------------------------------------- */
+    function renderCheckout() {
+      Object.keys(variantCards).forEach(function (key) {
+        var card = variantCards[key];
+        var variant = CHECKOUT.variants[key];
+        card.radio.checked = key === co.selectedVariant;
+        card.language.textContent = t(variant.language === "UA" ? "langUA" : "langEN");
+        card.format.textContent = t(variant.format === "physical" ? "physical" : "ebook");
+        card.price.textContent = priceLabel(variant);
+      });
+      CHECKOUT.countries.forEach(function (country) {
+        countryOptions[country.code].textContent = country.label[Lang.get()];
+      });
+      renderFields();
+      renderSummary();
+    }
 
+    // Preserve the site's existing localization behavior, including all other sections.
     function applyCopy() {
-      var section = document.getElementById("buy");
-      section.lang = Lang.get() === "EN" ? "en" : "uk";
+      document.getElementById("buy").lang = Lang.get() === "EN" ? "en" : "uk";
       document.querySelectorAll("[data-i18n]").forEach(function (el) {
         el.textContent = t(el.dataset.i18n);
       });
@@ -923,250 +935,38 @@
       document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
         el.placeholder = t(el.dataset.i18nPlaceholder);
       });
-      buildCountry();
-      buildShipping();
-      coPay.textContent = co.sending ? t("paying") : t("pay");
-      clearErrors();
-      render();
+      renderCheckout();
     }
 
-    /* --- state → UI ----------------------------------------------------- */
-
-    function render() {
-      var physical = checked("format") === "physical";
-      coPhysical.disabled = !physical;
-      coQuantityWrap.hidden = !physical;
-      coQuantity.disabled = !physical;
-      coPhoneWrap.hidden = !physical;
-      coPhone.disabled = !physical;
-      coEbookNote.hidden = physical;
-      coSecure.hidden = physical;
-
-      var hasMethods = CHECKOUT.shipping.methods.length > 0;
-      var methods = availableMethods();
-      var showShipping = physical && hasMethods && methods.length > 0;
-      coShippingWrap.hidden = !showShipping;
-      coShipping.disabled = !showShipping;
-      coShippingNone.hidden = !(physical && !showShipping);
-
-      var variant = currentVariant();
-      var quantity = physical ? Number(coQuantity.value) : 1;
-      var method = physical && showShipping ? selectedMethod() : null;
-
-      document.getElementById("os-format").textContent = t(variant.format);
-      document.getElementById("os-language").textContent = t(variant.language === "UA" ? "langUA" : "langEN");
-      document.getElementById("os-quantity").textContent = String(quantity);
-      document.getElementById("os-unit").textContent =
-        variant.price === null ? t("priceTbd") : money(variant.price, variant.currency);
-
-      var deliveryRow = document.getElementById("os-delivery-row");
-      deliveryRow.hidden = !physical;
-      var delivery = document.getElementById("os-delivery");
-      var shipping = shipCost(method, variant.currency);
-      if (shipping === null) delivery.textContent = t("deliveryTbd");
-      else delivery.textContent = shipping > 0 ? money(shipping, variant.currency) : t("deliveryFree");
-
-      var total = document.getElementById("os-total");
-      if (variant.price === null) {
-        total.textContent = t("priceTbd");
-      } else {
-        var sum = variant.price * quantity + (shipping || 0);
-        total.textContent =
-          money(sum, variant.currency) + (physical && shipping === null ? " " + t("plusDelivery") : "");
+    function updateField(event) {
+      var field = event.target;
+      var binding = field.dataset.coField;
+      if (!binding || field.disabled) return;
+      var path = binding.split(".");
+      var previous = path.length === 1 ? co[path[0]] : co[path[0]][path[1]];
+      if (path.length === 1) co[path[0]] = field.value;
+      else co[path[0]][path[1]] = field.value;
+      if ((binding === "ukrainianDelivery.city" || binding === "ukrainianDelivery.type") && previous !== field.value) {
+        co.ukrainianDelivery.branch = "";
       }
+      if (binding === "deliveryCountry" || binding.indexOf("ukrainianDelivery.") === 0) renderCheckout();
     }
 
-    function onCountryChange() {
-      buildShipping();
-      render();
-    }
-
-    /* --- validation ------------------------------------------------------ */
-
-    function errorSlot(el) {
-      return coForm.querySelector('[data-error-for="' + el.id + '"]');
-    }
-
-    function setError(el, message) {
-      var slot = errorSlot(el);
-      if (slot) slot.textContent = message;
-      if (message) el.setAttribute("aria-invalid", "true");
-      else el.removeAttribute("aria-invalid");
-    }
-
-    function clearErrors() {
-      coForm.querySelectorAll("[aria-invalid]").forEach(function (el) {
-        setError(el, "");
-      });
-      coError.hidden = true;
-      coError.textContent = "";
-    }
-
-    function problemWith(el) {
-      var value = el.value.trim();
-      if (el.required && !value) return t("required");
-      if (el.type === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
-        return t("invalidEmail");
-      }
-      if (el.type === "tel" && value) {
-        var digits = value.replace(/\D/g, "").length;
-        if (!/^[+\d\s().-]+$/.test(value) || digits < 7 || digits > 15) return t("invalidPhone");
-      }
-      return "";
-    }
-
-    function validate() {
-      var first = null;
-      coForm.querySelectorAll("input[type=text], input[type=email], input[type=tel], select").forEach(function (el) {
-        if (!el.willValidate) {
-          setError(el, "");
-          return;
-        }
-        var message = problemWith(el);
-        setError(el, message);
-        if (message && !first) first = el;
-      });
-      if (first) first.focus();
-      return !first;
-    }
-
-    coForm.addEventListener("input", function (event) {
-      if (event.target.getAttribute && event.target.getAttribute("aria-invalid")) {
-        setError(event.target, problemWith(event.target));
-      }
+    coForm.addEventListener("input", updateField);
+    coForm.addEventListener("change", function (event) {
+      if (event.target.name === "variant") {
+        if (!Object.prototype.hasOwnProperty.call(CHECKOUT.variants, event.target.value)) return;
+        co.selectedVariant = event.target.value;
+        renderCheckout();
+      } else updateField(event);
     });
-
-    /* --- order ------------------------------------------------- */
-
-    function field(id) {
-      return document.getElementById(id).value.trim();
-    }
-
-    /* The order as the form receives it. */
-    function buildOrder() {
-      var variant = currentVariant();
-      var physical = variant.format === "physical";
-      var method = physical ? selectedMethod() : null;
-      var quantity = physical ? Number(coQuantity.value) : 1;
-      var order = {
-        variantId: variant.id,
-        format: variant.format,
-        bookLanguage: variant.language,
-        siteLanguage: Lang.get(),
-        quantity: quantity,
-        currency: variant.currency,
-        unitPrice: variant.price,
-        deliveryCost: shipCost(method, variant.currency),
-        total: variant.price === null ? null : variant.price * quantity + (shipCost(method, variant.currency) || 0),
-        customer: { name: field("co-name"), email: field("co-email") },
-        shipping: null,
-      };
-      if (physical) {
-        order.customer.phone = field("co-phone");
-        order.shipping = {
-          country: field("co-country"),
-          address: field("co-address"),
-          city: field("co-city"),
-          postalCode: field("co-postal"),
-          methodId: method ? method.id : null,
-        };
-      }
-      return order;
-    }
-
-    function showError(message) {
-      coError.textContent = message;
-      coError.hidden = false;
-    }
-
-    function setSending(on) {
-      co.sending = on;
-      coPay.disabled = on;
-      coPay.textContent = on ? t("paying") : t("pay");
-      coForm.setAttribute("aria-busy", String(on));
-    }
-
-    /* Google Forms sends no CORS headers, so the response is opaque: a
-       resolved promise means the request left the browser, not that Google
-       accepted it. Only a genuine network failure is reported as an error. */
-    function submitOrder(order) {
-      var cfg = CHECKOUT.orderForm;
-      var body = new URLSearchParams();
-      body.set(cfg.entry.format, cfg.options.format[order.format]);
-      body.set(cfg.entry.language, cfg.options.language[order.bookLanguage]);
-      body.set(cfg.entry.quantity, String(order.quantity));
-      body.set(cfg.entry.name, order.customer.name);
-      body.set(cfg.entry.email, order.customer.email);
-      if (order.shipping) {
-        body.set(cfg.entry.phone, order.customer.phone);
-        body.set(cfg.entry.country, order.shipping.country);
-        body.set(cfg.entry.address, order.shipping.address);
-        body.set(cfg.entry.city, order.shipping.city);
-        body.set(cfg.entry.postal, order.shipping.postalCode);
-      }
-      setSending(true);
-      return fetch(cfg.action, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-        body: body.toString(),
-      })
-        .then(function () {
-          openPayment(order); /* the form stays as it is, button locked, while we leave */
-        })
-        .catch(function () {
-          setSending(false);
-          showError(t("sendError"));
-        });
-    }
-
-    /* Same tab: a new window opened after an async request is blocked by
-       popup blockers. The e-mail is passed on so Stripe can prefill it. */
-    function openPayment(order) {
-      var url = new URL(CHECKOUT.paymentUrl);
-      url.searchParams.set("prefilled_email", order.customer.email);
-      window.location.assign(url.toString());
-    }
-
+    // Also suppress Enter-key submission. There are no network/order handlers.
     coForm.addEventListener("submit", function (event) {
       event.preventDefault();
-      if (co.sending) return;
-      clearErrors();
-
-      if (!validate()) {
-        showError(t("checkFields"));
-        return;
-      }
-      var order = buildOrder();
-      if (order.total === null) {
-        showError(t("priceMissing"));
-        return;
-      }
-      submitOrder(order);
     });
+    document.addEventListener("sitelangchange", applyCopy);
 
-    /* --- wiring --------------------------------------------------------- */
-
-    coForm.addEventListener("change", function (event) {
-      var name = event.target.name;
-      if (name === "language") co.langTouched = true;
-      if (name === "format" || name === "quantity" || name === "shipping" || name === "language") {
-        render();
-      }
-    });
-
-    document.addEventListener("sitelangchange", function () {
-      if (!co.langTouched) selectBookLanguage(Lang.get());
-      applyCopy();
-    });
-
-    function selectBookLanguage(code) {
-      var radio = coForm.querySelector('input[name="language"][value="' + code + '"]');
-      if (radio) radio.checked = true;
-    }
-
-    buildQuantity();
-    selectBookLanguage(Lang.get());
+    buildVariantSelector();
     applyCopy();
   }
 

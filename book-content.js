@@ -24,7 +24,8 @@ window.BOOK_PREVIEW = {
     quote: { lead: "Бо я не хочу прожити правильне життя.", strong: "Я хочу прожити СВОЄ." },
     ui: {
       coverLabel: "Відкрити книгу «Подорож трансформацій»",
-      coverHint: "Натисніть на обкладинку, щоб відкрити книгу",
+      coverAction: "Відкрити книгу",
+      coverHint: "Натисніть «Відкрити книгу» або на обкладинку, щоб читати уривок",
       prev: "Попередня сторінка",
       next: "Наступна сторінка",
       close: "Закрити книгу",
@@ -36,94 +37,39 @@ window.BOOK_PREVIEW = {
       swipeHint: "Гортайте свайпом або стрілками",
     },
     blocks: [
-      { type: "title", html: "Я за свободу.", keepNext: true },
+      { type: "title", html: "Дитинство. Перший спогад", keepNext: true },
       {
         type: "p",
-        html: "За свободу бути собою. Не тією версією себе, яку від тебе хочуть бачити. Не «правильною». Не зручною. А справжньою.",
-      },
-      {
-        type: "p",
-        html: "Для мене свобода- це коли я сама вирішую, як виглядати сьогодні, який парфум обрати, куди поїхати, з ким бути, чим займатися і що спробувати.",
+        html: "Постійно згадую яскравий епізод з дитинства – той, що, мабуть, і визначив моє майбутнє.",
       },
       {
         type: "p",
-        html: "Я можу сама сісти за кермо й поїхати кудись без плану. Можу змінити маршрут. Можу сказати «а давайте?» і через день уже робити те, чого раніше ніколи не робила.",
-      },
-      { type: "p", html: "Я авантюристка. І ні, це не аферистка :)" },
-      {
-        type: "p",
-        html: "Аферистка шукає, як отримати щось за рахунок інших. А мені цікаво зовсім інше- як створити собі й іншим більше життя. Більше досвіду. Більше історій. Більше моментів, які потім згадуєш і думаєш: «Оце ми тоді дали жару».",
-      },
-      { type: "p", html: "Мені цікаво пробувати. Досліджувати. Помилятися. Пробувати ще раз." },
-      {
-        type: "p",
-        html: "Я багато чого тестую на собі- у роботі, психології, спорті, подорожах, спілкуванні, житті. Не тому, що знаю, як правильно. Навпаки. Мені цікаво перевіряти: а що буде, якщо?",
-      },
-      { type: "p", html: "Я не вірю в один правильний сценарій життя." },
-      {
-        type: "p",
-        html: "Можна бути успішною в кар’єрі й одночасно шукати себе. Можна змінити професію. Можна мати десять захоплень. Можна сьогодні хотіти одного, а через рік- зовсім іншого.",
-      },
-      { type: "p", html: "І можна просто бути собою." },
-      {
-        type: "p",
-        html: "Мені дуже цікаві люди. Я люблю спостерігати за ними, слухати їхні історії, бачити сильні сторони й те, що вони самі в собі ще не помічають.",
-      },
-      { type: "p", html: "Тому мені важливі люди поруч." },
-      {
-        type: "p",
-        html: "Вільні. Цілеспрямовані. Допитливі. Ті, хто розвивається, але не змагається. Хто може підтримати, а не оцінити. Де можна бути різною і не боятися, що тебе за це засудять.",
-      },
-      { type: "p", html: "Я за чесні й щирі стосунки. За взаємоповагу. За «Я OK — Ти OK»." },
-      {
-        type: "p",
-        html: "Я не хочу доводити, що знаю, як правильно жити. Я хочу показувати, що можна жити по-різному.",
+        html: "Мені тоді було роки три. У маминої подруги народилася донька. Ми прийшли в пологовий будинок, але нас, звісно, всередину не пустили. Подруга не могла вийти – немовля потребувало багато уваги.",
       },
       {
         type: "p",
-        html: "І якщо після розмови зі мною, моєї історії, виступу, книги, подорожі чи навіть якоїсь моєї чергової авантюри ти раптом подумав:",
-        keepNext: true,
+        html: "Та мама працювала в тій самій будівлі лікарні, тому мала своєрідний карт-бланш. Вона покликала знайому лікарку-гінекологиню, щоб дізнатися, як пройшли пологи та чи все добре.",
       },
       {
         type: "p",
-        html: "«А чому б і мені не спробувати?» - значить, усе це було не дарма.",
-      },
-      { type: "p", html: "Бо я сама так живу." },
-      {
-        type: "p",
-        html: "Коли в голові стає забагато хаосу, я сідаю за кермо й просто їду. А інколи беру квиток і вирушаю в подорож. Мені потрібен рух, нові місця й трохи нерутини, щоб видихнути, розкласти все по поличках і знову повернутися до себе.",
+        html: "Це було ще до 2000-х, тоді ще ніхто не викладав сторіз із пологових, а телефони лише вчилися дзвонити без дротів. У нашому маленькому містечку навіть слово «айфон» звучало б як із майбутнього, а нокії з поліфонією стануть розкішшю ще років через десять.",
       },
       {
         type: "p",
-        html: "Мабуть, саме тому мені так близькі слова із пісні ʼRide’ by Lana Del Rey.",
-        keepNext: true,
-      },
-      {
-        type: "verse",
-        lines: [
-          "Who are you? Are you in touch with all your darkest fantasies?",
-          "Have you created a life for yourself where you can experience them?",
-          "I have.",
-          "I am fucking crazy.",
-          "But I am free.",
-        ],
-      },
-      { type: "p", html: "Оце про мене." },
-      {
-        type: "p",
-        html: "Я хочу створити таке життя, в якому мені не доведеться себе зменшувати.",
+        html: "Та я пам’ятаю зовсім не техніку.",
       },
       {
         type: "p",
-        html: "Де є місце для кар’єри, психології, спорту, подорожей, книг, людей, спонтанності, великих ідей і маленьких радощів.",
+        html: "Я пам’ятаю, як моє серце зненацька забилося вдесятеро швидше, коли в коридор вийшла вона – поважна жінка в білому халаті, спокійна, стримана, з тим поглядом, що не потребує слів.",
       },
       {
         type: "p",
-        html: "Де можна бути сильною і вразливою. Серйозною і смішною. Амбітною і просто кайфувати від життя.",
+        html: "Вона знала, що робить. Знала відповіді. І знала ціну своєму часу.",
       },
-      { type: "p", html: "Де не треба обирати одну версію себе." },
-      { type: "p", html: "Бо я не хочу прожити правильне життя.", keepNext: true },
-      { type: "closing", html: "Я хочу прожити СВОЄ." },
+      {
+        type: "p",
+        html: "У той момент я відчула – ось вона, сила. Не та, що кричить чи переконує, а тиха, впевнена, професійна.",
+      },
     ],
   },
 
@@ -132,7 +78,8 @@ window.BOOK_PREVIEW = {
     quote: { lead: "Because I don’t want to live the “right” life.", strong: "I want to live MY life." },
     ui: {
       coverLabel: "Open the book “Journey of Transformations”",
-      coverHint: "Click the cover to open the book",
+      coverAction: "Open the book",
+      coverHint: "Tap “Open the book” or the cover to read a preview",
       prev: "Previous page",
       next: "Next page",
       close: "Close the book",
@@ -144,98 +91,39 @@ window.BOOK_PREVIEW = {
       swipeHint: "Swipe or use the arrows to turn pages",
     },
     blocks: [
-      { type: "title", html: "I’m all for freedom.", keepNext: true },
+      { type: "title", html: "Childhood. My First Memory", keepNext: true },
       {
         type: "p",
-        html: "The freedom to be yourself. Not the version of you people want to see. Not the “right” one. Not the convenient, socially acceptable one. But the real you.",
-      },
-      {
-        type: "p",
-        html: "For me, freedom means deciding for myself how I want to look today, which perfume to wear, where to go, who to be with, what to do and what to try.",
+        html: "There is one vivid episode from childhood that I return to again and again - one that may, in some way, have shaped my future.",
       },
       {
         type: "p",
-        html: "I can jump in the car and drive somewhere with absolutely no plan. I can change my route halfway through. I can say, “Why don’t we...?” and a day later, find myself doing something I’ve never done before.",
+        html: "I was about three years old. My mother’s friend had just had a baby girl. We came to the maternity hospital, but of course they would not let us inside. My mother’s friend could not come out either - the newborn needed a great deal of attention.",
       },
       {
         type: "p",
-        html: "I’m an adventurer. And no, that’s not the same as being a con artist. :)",
+        html: "My mother, however, worked in the same hospital building, which gave her a certain kind of carte blanche. She called over a gynecologist she knew to ask how the birth had gone and whether everything was all right.",
       },
       {
         type: "p",
-        html: "A con artist looks for ways to get something at someone else’s expense. I’m interested in something completely different: how to make life bigger, for myself and for others. More experiences. More stories. More moments you look back on and think, “Damn, that was wild. We really did that!”",
-      },
-      { type: "p", html: "I love trying things. Exploring. Making mistakes. Trying again." },
-      {
-        type: "p",
-        html: "I experiment with all sorts of things in my own life — work, psychology, sports, travel, relationships, life in general. Not because I know the right way to do things. Quite the opposite. I’m curious to find out: what happens if I try this?",
-      },
-      { type: "p", html: "I don’t believe there’s only one right way to live." },
-      {
-        type: "p",
-        html: "You can be successful in your career and still be figuring yourself out. You can change careers whenever you want. You can have ten different interests. You can want one thing today and something completely different a year from now.",
-      },
-      { type: "p", html: "And you can simply be yourself." },
-      {
-        type: "p",
-        html: "I’m genuinely fascinated by people. I love observing them, listening to their stories, seeing their strengths and noticing the things in themselves they haven’t quite seen yet.",
-      },
-      { type: "p", html: "That’s why the people around me matter so much." },
-      {
-        type: "p",
-        html: "Free-spirited. Driven. Curious. People who keep growing without turning everything into a competition. People who can support you instead of judge you. People you can be different versions of yourself around, without worrying about being judged for it.",
+        html: "This was before the 2000s, when no one posted stories from maternity wards and phones were only just learning how to make calls without wires. In our small town, even the word “iPhone” would have sounded like something from the future, while Nokias with polyphonic ringtones would not become a luxury for another decade or so.",
       },
       {
         type: "p",
-        html: "I believe in honest, genuine relationships. Mutual respect. And the “I’m OK — You’re OK” approach to relationships.",
+        html: "But technology is not what I remember.",
       },
       {
         type: "p",
-        html: "I don’t want to prove that I know how to live life the right way. I want to show that there are different ways to live it.",
+        html: "I remember my heart suddenly starting to beat ten times faster when SHE stepped into the corridor - an imposing woman in a white coat, calm and composed, with the kind of gaze that needed no words.",
       },
       {
         type: "p",
-        html: "And if, after a conversation with me, hearing my story, watching me give a talk, reading a book, going on a trip or hearing about one of my latest adventures, you suddenly find yourself thinking:",
-        keepNext: true,
-      },
-      { type: "p", html: "“Why don’t I give it a try, too?”", keepNext: true },
-      { type: "p", html: "Then it’s all been worth it." },
-      { type: "p", html: "Because that’s how I live, too." },
-      {
-        type: "p",
-        html: "When my head gets too full of chaos, I grab my keys, jump in the car and just drive. Sometimes, I book a ticket and take off somewhere. I need movement, new places and a little break from routine to breathe, sort things out in my head and find my way back to myself.",
+        html: "She knew what she was doing. She knew the answers. And she knew the value of her time.",
       },
       {
         type: "p",
-        html: "Maybe that’s exactly why the lyrics from Lana Del Rey’s <em>Ride</em> resonate with me so much.",
-        keepNext: true,
+        html: "In that moment, I thought: this is what strength looks like. Not the kind that shouts or tries to persuade, but something quiet, confident, professional.",
       },
-      {
-        type: "verse",
-        lines: [
-          "Who are you? Are you in touch with all your darkest fantasies?",
-          "Have you created a life for yourself where you can experience them?",
-          "I have.",
-          "I am fucking crazy.",
-          "But I am free.",
-        ],
-      },
-      { type: "p", html: "That’s me." },
-      {
-        type: "p",
-        html: "I want to create a life where I never have to make myself smaller.",
-      },
-      {
-        type: "p",
-        html: "A life with room for a career, psychology, sports, travel, books, people, spontaneity, big ideas and little joys.",
-      },
-      {
-        type: "p",
-        html: "A life where I can be strong and vulnerable. Serious and funny. Ambitious and still know how to enjoy the hell out of life.",
-      },
-      { type: "p", html: "Where I don’t have to choose just one version of myself." },
-      { type: "p", html: "Because I don’t want to live the “right” life.", keepNext: true },
-      { type: "closing", html: "I want to live MY life." },
     ],
   },
 };

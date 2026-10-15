@@ -587,17 +587,116 @@ select {
 }
 
 /* --------------------------------------------------------------------------
+   First-visit language selection
+   -------------------------------------------------------------------------- */
+
+html.is-choosing-language {
+  overflow: hidden;
+}
+
+.language-dialog {
+  width: min(30rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: clamp(1.5rem, 5vw, 2.75rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--ivory);
+  color: var(--chocolate);
+  box-shadow: 0 1.5rem 5rem var(--ink-30);
+  text-align: center;
+}
+
+.language-dialog::backdrop {
+  background: var(--ink-65);
+  backdrop-filter: blur(6px);
+}
+
+.language-dialog__welcome {
+  margin: 0 0 1.25rem;
+  color: var(--burgundy);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.language-dialog h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  line-height: 1.15;
+}
+
+.language-dialog h2 span,
+#language-description span {
+  display: block;
+}
+
+#language-description {
+  margin: 0;
+  color: var(--warm-gray);
+  font-size: 0.875rem;
+}
+
+.language-dialog__choices {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.language-dialog__choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.5rem;
+  padding: 0.875rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--chocolate);
+  font: inherit;
+  cursor: pointer;
+}
+
+.language-dialog__choice span {
+  color: var(--burgundy);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.language-dialog__choice:hover {
+  border-color: var(--burgundy);
+  background: var(--sand);
+}
+
+.language-dialog__choice:focus-visible {
+  outline: 2px solid var(--burgundy);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
    Book reader — cover, spread, leaf. Sizes (--pw, --ph, --fs) are set from
    JS so pagination and layout always agree.
    -------------------------------------------------------------------------- */
 
+.book-preview {
+  display: grid;
+  align-items: center;
+  min-height: calc(var(--reader-viewport-height, 100svh) - var(--reader-nav-height, 64px));
+  padding: 12px clamp(1rem, 4vw, 3rem);
+  background: var(--ivory);
+  scroll-margin-top: var(--reader-nav-height, 64px);
+}
+
 .reader {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: calc(var(--reader-nav-height, 76px) + 12px);
   --cover-tone: #d9695f;
   --cover-tone-deep: #b9473f;
   --paper: #fbf6ec;
   --paper-edge: #efe5d2;
-  margin-top: 3rem;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding-block: 0.75rem;
   text-align: left;
 }
 
@@ -605,7 +704,7 @@ select {
   display: flex;
   justify-content: center;
   overflow: hidden;
-  padding: 1.5rem 0 2rem;
+  padding: 0.75rem 0 1rem;
 }
 
 .book {
@@ -973,16 +1072,67 @@ select {
 
 /* --- controls ------------------------------------------------------------ */
 
-.reader__hint {
-  margin: 0;
-  text-align: center;
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
+.reader__controls {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  min-width: 0;
 }
 
-.reader[data-state="open"] .reader__hint {
+@media (min-width: 35rem) and (max-height: 34rem) {
+  .reader {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.85fr);
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .reader__actions {
+    gap: 0.75rem;
+  }
+}
+
+.reader__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.875rem 1.25rem;
+  border: 1px solid var(--wine-deep);
+  border-radius: var(--radius-xl);
+  background: var(--burgundy);
+  color: var(--ivory);
+  box-shadow: 0 6px 18px var(--wine-deep-20);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 180ms, box-shadow 180ms;
+}
+
+.reader__cta:hover {
+  background: var(--wine-deep);
+  box-shadow: 0 8px 24px var(--wine-deep-30);
+}
+
+.reader__cta:focus-visible {
+  outline: 3px solid var(--burgundy);
+  outline-offset: 4px;
+}
+
+.reader__description {
+  max-width: 36rem;
+  margin: 0;
+  color: var(--muted-foreground);
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.reader[data-state="open"] .reader__hint,
+.reader[data-state="open"] .reader__description {
   display: none;
 }
 
@@ -991,7 +1141,7 @@ select {
   align-items: center;
   justify-content: center;
   gap: 1.25rem;
-  margin-top: 0.5rem;
+  margin-top: 0;
 }
 
 .reader__bar[hidden] {
@@ -1040,12 +1190,12 @@ select {
 }
 
 .reader__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem 2.5rem;
-  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  width: 100%;
+  max-width: 36rem;
+  gap: 0.75rem;
+  margin-top: 0;
 }
 
 .reader__link {
@@ -1303,7 +1453,7 @@ select {
 }
 
 /* --------------------------------------------------------------------------
-   12. Checkout
+   12. Checkout — local Phase 1 interface
    -------------------------------------------------------------------------- */
 
 .checkout {
@@ -1326,279 +1476,164 @@ select {
   color: var(--muted-foreground);
 }
 
-.checkout__error[hidden],
-.checkout__secure[hidden],
-.step__note[hidden],
-.osum__row[hidden],
-.cf[hidden] {
-  display: none;
-}
-
 .checkout__form {
-  margin-top: 3rem;
   display: grid;
-  gap: 2.5rem;
+  gap: 1.75rem;
+  margin-top: 2.5rem;
 }
 
-.checkout__panel {
-  display: grid;
-  gap: 2.75rem;
-  align-content: start;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background-color: var(--ivory);
-  padding: 1.75rem 1.5rem;
-  box-shadow: 0 24px 40px -32px var(--wine-deep-30);
-}
-
-.checkout__showcase {
-  text-align: left;
-}
-
-.checkout__cover {
-  display: block;
-  width: 100%;
-  max-width: 24rem;
-  height: auto;
-  margin: 0 auto 2rem;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 24px 40px -22px var(--wine-deep-30);
-}
-
-.showcase__title {
-  font-family: var(--font-serif);
-  font-size: clamp(1.875rem, 3vw, 2.5rem);
-  font-weight: 500;
-  line-height: 1.1;
-  color: var(--chocolate);
-}
-
-.showcase__lead {
-  margin-top: 0.875rem;
-  max-width: 28rem;
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--warm-gray);
-}
-
-.cf--qty {
-  max-width: 10rem;
-}
-
-.cf--qty[hidden],
-.cf[hidden] {
-  display: none;
-}
-
-.fields__legend {
-  grid-column: 1 / -1;
-  margin-bottom: 0.25rem;
-  padding: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--warm-gray);
-}
-
-.step__title {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  margin-bottom: 1.5rem;
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--foreground);
-}
-
-.step__num {
-  display: grid;
-  place-items: center;
-  width: 1.875rem;
-  height: 1.875rem;
-  flex: none;
-  border: 1px solid var(--wine);
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 0.8125rem;
-  color: var(--wine);
-}
-
-.step__note {
-  margin-top: 1rem;
-  font-size: 0.9375rem;
-  line-height: 1.55;
-  color: var(--muted-foreground);
-}
-
-/* --- edition cards + language pills -------------------------------------- */
-
-.options {
-  margin: 0 0 1.75rem;
+.checkout .options,
+.checkout .fields {
+  min-inline-size: 0;
+  margin: 0;
   border: 0;
   padding: 0;
-  min-inline-size: 0;
 }
 
-.options__legend {
-  margin-bottom: 0.75rem;
+.checkout .options__legend {
+  margin-bottom: 0.875rem;
   padding: 0;
   font-size: 0.75rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--muted-foreground);
 }
 
-.cards {
+.checkout .cards {
   display: grid;
   gap: 0.75rem;
 }
 
-.card,
-.pill {
+.checkout .card {
   position: relative;
   display: block;
+  min-width: 0;
   cursor: pointer;
 }
 
-.card input,
-.pill input {
+.checkout .card input {
   position: absolute;
   opacity: 0;
   inset: 0;
+  width: 100%;
+  height: 100%;
   margin: 0;
   cursor: pointer;
 }
 
-.card__body {
+.checkout .card__body {
   display: grid;
-  justify-items: start;
   align-content: start;
-  gap: 0.25rem;
+  gap: 0.375rem;
   height: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background-color: var(--card);
-  padding: 1.25rem 1.25rem 1.25rem;
-  transition:
-    border-color 180ms,
-    box-shadow 180ms,
-    background-color 180ms;
+  background: var(--card);
+  padding: 1rem 2.5rem 1rem 1rem;
 }
 
-.card:hover .card__body {
-  border-color: var(--ink-30);
+.checkout .card__body::after {
+  content: "";
+  position: absolute;
+  top: 1.125rem;
+  right: 1rem;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--ink-30);
+  border-radius: 50%;
 }
 
-.card input:checked + .card__body {
-  background-color: color-mix(in oklab, var(--burgundy) 6%, var(--card));
+.checkout .card:hover .card__body {
   border-color: var(--wine);
-  box-shadow:
-    0 0 0 1px var(--wine),
-    0 12px 24px -16px var(--wine-deep-30);
 }
 
-.card input:focus-visible + .card__body,
-.pill input:focus-visible + span {
-  outline: 2px solid var(--gold);
-  outline-offset: 3px;
+.checkout .card input:checked + .card__body {
+  background: color-mix(in oklab, var(--burgundy) 6%, var(--card));
+  border-color: var(--wine);
+  box-shadow: 0 0 0 1px var(--wine);
 }
 
-.card__icon {
-  width: 2rem;
-  height: 2rem;
-  margin-bottom: 0.75rem;
+.checkout .card input:checked + .card__body::after {
+  border: 5px solid var(--wine);
+  background: var(--ivory);
+}
+
+.checkout .card input:focus-visible + .card__body {
+  outline: 2px solid var(--wine);
+  outline-offset: 4px;
+}
+
+.checkout .card__language {
+  font-size: 0.8125rem;
   color: var(--muted-foreground);
-  transition: color 180ms;
 }
 
-.card input:checked + .card__body .card__icon {
+.checkout .card__title {
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
+.checkout .card__price {
+  margin-top: 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: var(--wine);
 }
 
-.card__title {
+.checkout__layout {
+  display: grid;
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.checkout__panel,
+.checkout__summary {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--ivory);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.checkout__panel {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.checkout .step__title {
+  margin: 0 0 1.25rem;
+  padding: 0;
   font-family: var(--font-serif);
   font-size: 1.5rem;
   line-height: 1.2;
-  color: var(--foreground);
 }
 
-.card__note {
-  font-size: 0.875rem;
-  line-height: 1.45;
-  color: var(--muted-foreground);
-}
-
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.625rem;
-}
-
-.pill span {
-  display: block;
-  min-height: 2.75rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background-color: var(--card);
-  padding: 0.65rem 1.5rem;
-  font-size: 0.9375rem;
-  line-height: 1.4;
-  transition:
-    border-color 180ms,
-    background-color 180ms,
-    color 180ms;
-}
-
-.pill:hover span {
-  border-color: var(--ink-30);
-}
-
-.pill input:checked + span {
-  border-color: var(--wine);
-  background-color: var(--wine);
-  color: var(--cream);
-}
-
-/* --- fields --------------------------------------------------------------- */
-
-.fields {
+.checkout .fields {
   display: grid;
   gap: 1.25rem;
-  margin: 0;
-  border: 0;
-  padding: 0;
-  min-inline-size: 0;
 }
 
-.fields--physical {
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
-}
-
-.fields--physical[disabled] {
-  display: none;
-}
-
-.cf {
+.checkout .cf {
   display: block;
+  min-width: 0;
 }
 
-.cf__label {
+.checkout .cf__label {
   display: block;
   margin-bottom: 0.4rem;
   font-size: 0.75rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted-foreground);
 }
 
-.cf input,
-.cf select {
+.checkout .cf input,
+.checkout .cf select,
+.checkout .cf textarea {
   display: block;
   width: 100%;
+  min-width: 0;
   min-height: 3rem;
   border: 0;
   border-bottom: 1px solid var(--ink-30);
@@ -1606,137 +1641,156 @@ select {
   background-color: transparent;
   padding: 0.5rem 0;
   font: inherit;
-  font-size: 17px;
+  font-size: 16px;
   color: var(--foreground);
-  transition: border-color 150ms;
 }
 
-.cf select {
+.checkout .cf textarea {
+  resize: vertical;
+}
+
+.checkout .cf select {
   appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--wine) 50%),
     linear-gradient(135deg, var(--wine) 50%, transparent 50%);
-  background-position:
-    calc(100% - 10px) 55%,
-    calc(100% - 5px) 55%;
-  background-size:
-    5px 5px,
-    5px 5px;
+  background-position: calc(100% - 10px) 55%, calc(100% - 5px) 55%;
+  background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
   padding-right: 1.5rem;
+  text-overflow: ellipsis;
 }
 
-.cf input::placeholder {
-  color: var(--ink-30);
+.checkout .cf input::placeholder {
+  color: var(--warm-gray);
 }
 
-.cf input:focus,
-.cf select:focus {
+.checkout .cf input:focus-visible,
+.checkout .cf select:focus-visible,
+.checkout .cf textarea:focus-visible {
+  outline: 2px solid var(--wine);
+  outline-offset: 3px;
   border-bottom-color: var(--wine);
-  outline: none;
-  box-shadow: 0 1px 0 0 var(--wine);
 }
 
-.cf input[aria-invalid="true"],
-.cf select[aria-invalid="true"] {
-  border-bottom-color: var(--destructive);
-  box-shadow: 0 1px 0 0 var(--destructive);
+.checkout .cf select:disabled {
+  cursor: not-allowed;
+  color: var(--warm-gray);
+  border-bottom-style: dashed;
 }
 
-.cf__error {
-  display: block;
-  min-height: 0;
-  margin-top: 0.35rem;
-  font-size: 0.8125rem;
-  line-height: 1.3;
-  color: var(--destructive);
-}
-
-.cf__error:empty {
-  display: none;
-}
-
-/* --- summary -------------------------------------------------------------- */
-
-.osum {
+.checkout .step__note,
+.checkout__required-note,
+.checkout__payment-note {
   margin: 0;
-  font-size: 16px;
-}
-
-.osum__row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-block: 0.6rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.osum__row dt {
+  font-size: 0.875rem;
+  line-height: 1.55;
   color: var(--muted-foreground);
 }
 
-.osum__row dd {
+.checkout__summary-book {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.checkout__summary-book img {
+  width: 4rem;
+  height: auto;
+  flex: none;
+  border-radius: var(--radius-sm);
+}
+
+.checkout__summary-book p {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
+.checkout .osum {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.checkout .osum__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.checkout .osum__row dt {
+  color: var(--muted-foreground);
+}
+
+.checkout .osum__row dd {
   margin: 0;
   text-align: right;
+  overflow-wrap: anywhere;
 }
 
-.osum__row--total {
-  border-bottom: 0;
-  padding-top: 1rem;
+.checkout .osum__row--delivery {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.checkout .osum__row--delivery dd {
+  text-align: left;
+  line-height: 1.5;
+}
+
+.checkout .osum__row--total {
   align-items: baseline;
+  border: 0;
+  padding-top: 1rem;
 }
 
-.osum__row--total dt {
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-.osum__row--total dd {
+.checkout .osum__row--total dd {
   font-family: var(--font-serif);
   font-size: 1.75rem;
   line-height: 1.1;
   color: var(--wine);
 }
 
-.checkout__error {
-  margin: 1rem 0 0;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--destructive);
-}
-
-.btn--pay {
+.checkout .btn--pay {
   width: 100%;
   margin-top: 1.5rem;
   min-height: 3.5rem;
-  background-color: var(--wine);
+  background: var(--wine);
   color: var(--cream);
 }
 
-.btn--pay:hover:not(:disabled) {
-  background-color: var(--wine-deep);
-}
-
-.checkout__secure {
-  margin: 1rem 0 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--muted-foreground);
+.checkout__payment-note {
+  margin-top: 0.75rem;
+  text-align: center;
 }
 
 @media (min-width: 40rem) {
-  .cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .checkout .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .fields {
+  .checkout .fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 1.75rem;
+    column-gap: 1.5rem;
   }
 
-  .fields .cf--wide,
-  .fields .step__note {
+  .checkout .fields .cf--wide {
     grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 56rem) {
+  .checkout__layout {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+
+  .checkout__summary {
+    position: sticky;
+    top: 6rem;
   }
 }
 
@@ -1748,22 +1802,6 @@ select {
   .checkout__inner {
     padding-inline: 3rem;
   }
-
-  .checkout__form {
-    grid-template-columns: 5fr 7fr;
-    gap: 4.5rem;
-    align-items: start;
-  }
-
-  .checkout__showcase {
-    position: sticky;
-    top: 6.5rem;
-  }
-
-  .checkout__panel {
-    padding: 2.5rem;
-  }
-
 }
 
 /* --------------------------------------------------------------------------

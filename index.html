@@ -32,6 +32,15 @@
   </head>
 
   <body>
+    <dialog class="language-dialog" id="language-dialog" aria-labelledby="language-title" aria-describedby="language-description">
+      <p class="language-dialog__welcome"><span lang="uk">Вітаємо</span> / <span lang="en">Welcome</span></p>
+      <h2 id="language-title"><span lang="uk">Оберіть мову</span><span lang="en">Choose your language</span></h2>
+      <p id="language-description"><span lang="uk">Ви завжди можете змінити мову в меню.</span><span lang="en">You can change the language anytime in the menu.</span></p>
+      <div class="language-dialog__choices">
+        <button type="button" class="language-dialog__choice" data-choose-lang="UA" lang="uk">Українська <span aria-hidden="true">UA</span></button>
+        <button type="button" class="language-dialog__choice" data-choose-lang="EN" lang="en">English <span aria-hidden="true">EN</span></button>
+      </div>
+    </dialog>
     <div class="page">
       <!-- ============================ NAV ============================ -->
       <header class="nav" id="site-nav">
@@ -139,7 +148,7 @@
           </div>
         </section>
 
-        <!-- ============================ 02 ABOUT THE BOOK + PREVIEW ============================ -->
+        <!-- ============================ 02 ABOUT THE BOOK ============================ -->
         <section class="section section--sand preview" id="book">
           <div class="preview__inner">
             <p class="eyebrow eyebrow--wine" data-i18n="aboutEyebrow">Про книгу</p>
@@ -149,7 +158,11 @@
             <p class="pull-quote pull-quote--plain preview__quote mt-7" data-i18n="aboutQuote">
               Це книга, яку читають не для того, щоб знайти готові відповіді, а щоб почути власні.
             </p>
+          </div>
+        </section>
 
+        <!-- ============================ BOOK PREVIEW ============================ -->
+        <section class="book-preview" id="book-preview" aria-label="Уривок книги" data-i18n-aria="previewAria">
         <div class="reader" id="reader" data-state="closed" lang="uk">
           <div class="reader__stage" id="reader-stage">
             <div class="book is-closed" id="reader-book">
@@ -170,24 +183,27 @@
             </div>
           </div>
 
-          <p class="reader__hint" id="reader-hint"></p>
+          <div class="reader__controls" id="reader-controls">
+            <div class="reader__bar" id="reader-bar" hidden>
+              <button type="button" class="reader__arrow" id="reader-prev">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+              </button>
+              <p class="reader__status" id="reader-status" aria-live="polite"></p>
+              <button type="button" class="reader__arrow" id="reader-next">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
 
-          <div class="reader__bar" id="reader-bar" hidden>
-            <button type="button" class="reader__arrow" id="reader-prev">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-            </button>
-            <p class="reader__status" id="reader-status" aria-live="polite"></p>
-            <button type="button" class="reader__arrow" id="reader-next">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
-            </button>
-          </div>
-
-          <div class="reader__actions">
-            <button type="button" class="reader__link" id="reader-close" hidden></button>
-            <button type="button" class="reader__link reader__link--buy" id="reader-buy" data-order-book></button>
+            <div class="reader__actions">
+              <button type="button" class="reader__cta reader__hint" id="reader-hint" aria-controls="reader-spread" aria-expanded="false" aria-describedby="reader-hint-description">
+                <span id="reader-hint-action"></span>
+              </button>
+              <button type="button" class="reader__cta" id="reader-close" hidden></button>
+              <button type="button" class="reader__cta" id="reader-buy" data-order-book></button>
+            </div>
+            <p class="reader__description" id="reader-hint-description"></p>
           </div>
         </div>
-          </div>
         </section>
 
         <!-- ============================ 03 FEATURED QUOTE ============================ -->
@@ -204,7 +220,7 @@
           <div class="author__inner">
             <img
               class="author__portrait"
-              src="assets/portrait.jpg"
+              src="assets/main.jpg"
               alt="Альона Коваленко" data-i18n-alt="portraitAlt"
               width="1012"
               height="1555"
@@ -234,130 +250,115 @@
 
 
             <form class="checkout__form" id="co-form" novalidate>
-              <!-- Left: the product -->
-              <div class="checkout__showcase">
-                <img class="checkout__cover" src="assets/cover.png" alt="Обкладинка книги «Подорож трансформацій»" data-i18n-alt="coverAlt" width="1122" height="1402" loading="lazy" />
-                <h3 class="showcase__title" data-i18n="bookTitle">Подорож трансформацій</h3>
-                <p class="showcase__lead" data-i18n="lead2">
-                  Це чесна історія про втому, пошук внутрішньої опори й маленькі зміни, які з часом
-                  стають великими.
-                </p>
-              </div>
+              <!-- BookVariantSelector: one radio group, exactly three configured editions. -->
+              <fieldset class="options checkout__variants">
+                <legend class="options__legend" data-i18n="step1"></legend>
+                <div class="cards" id="co-variants"></div>
+              </fieldset>
 
-              <!-- Right: the order -->
-              <div class="checkout__panel">
-                <div class="step">
-                  <h3 class="step__title"><span class="step__num">1</span><span data-i18n="step1"></span></h3>
-
-                  <fieldset class="options">
-                    <legend class="options__legend" data-i18n="format"></legend>
-                    <div class="cards">
-                      <label class="card">
-                        <input type="radio" name="format" value="physical" checked />
-                        <span class="card__body">
-                          <svg class="card__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5.5A2.5 2.5 0 0 1 8.5 3H25v21H8.5A2.5 2.5 0 0 0 6 26.5z" /><path d="M6 26.5A2.5 2.5 0 0 0 8.5 29H25v-5" /><path d="M11 9h8" /></svg>
-                          <span class="card__title" data-i18n="physical"></span>
-                          <span class="card__note" data-i18n="physicalNote"></span>
-                        </span>
-                      </label>
-                      <label class="card">
-                        <input type="radio" name="format" value="ebook" />
-                        <span class="card__body">
-                          <svg class="card__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="18" height="26" rx="2.5" /><path d="M13 7.5h6" /><path d="M14.5 25h3" /></svg>
-                          <span class="card__title" data-i18n="ebook"></span>
-                          <span class="card__note" data-i18n="ebookNote"></span>
-                        </span>
-                      </label>
-                    </div>
-                  </fieldset>
-
-                  <fieldset class="options">
-                    <legend class="options__legend" data-i18n="language"></legend>
-                    <div class="pills">
-                      <label class="pill">
-                        <input type="radio" name="language" value="UA" checked />
-                        <span data-i18n="langUA"></span>
-                      </label>
-                      <label class="pill">
-                        <input type="radio" name="language" value="EN" />
-                        <span data-i18n="langEN"></span>
-                      </label>
-                    </div>
-                  </fieldset>
-
-                  <label class="cf cf--qty" id="co-quantity-wrap">
-                    <span class="cf__label" data-i18n="quantity"></span>
-                    <select id="co-quantity" name="quantity"></select>
-                  </label>
-                </div>
-
-                <div class="step">
-                  <h3 class="step__title"><span class="step__num">2</span><span data-i18n="step2"></span></h3>
-
-                  <div class="fields">
+              <div class="checkout__layout">
+                <div class="checkout__panel">
+                  <p class="checkout__required-note" data-i18n="requiredNote"></p>
+                  <!-- CustomerInformationForm -->
+                  <fieldset class="fields">
+                    <legend class="step__title" data-i18n="step2"></legend>
+                    <label class="cf" data-co-visible="printed">
+                      <span class="cf__label"><span data-i18n="country"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <select id="co-country" name="country" data-co-field="deliveryCountry" data-required-when="printed" required autocomplete="country"></select>
+                    </label>
+                    <p class="step__note cf--wide" id="co-name-hint" data-co-visible="ukraine" data-i18n="ukrainianNameHint"></p>
                     <label class="cf">
-                      <span class="cf__label" data-i18n="name"></span>
-                      <input id="co-name" name="name" type="text" required maxlength="80" autocomplete="name" data-i18n-placeholder="namePh" />
-                      <span class="cf__error" data-error-for="co-name"></span>
+                      <span class="cf__label"><span data-i18n="firstName"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-first-name" name="first-name" data-co-field="customer.firstName" data-required-when="printed" required autocomplete="given-name" data-i18n-placeholder="firstNamePh" type="text" maxlength="160" />
+                    </label>
+                    <label class="cf" data-co-visible="printed">
+                      <span class="cf__label"><span data-i18n="lastName"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-last-name" name="last-name" data-co-field="customer.lastName" data-required-when="printed" required autocomplete="family-name" data-i18n-placeholder="lastNamePh" type="text" maxlength="160" />
                     </label>
                     <label class="cf">
-                      <span class="cf__label" data-i18n="email"></span>
-                      <input id="co-email" name="email" type="email" required maxlength="120" autocomplete="email" data-i18n-placeholder="emailPh" />
-                      <span class="cf__error" data-error-for="co-email"></span>
+                      <span class="cf__label"><span data-i18n="email"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-email" name="email" data-co-field="customer.email" data-required-when="always" required autocomplete="email" data-i18n-placeholder="emailPh" type="email" maxlength="160" />
                     </label>
-                    <label class="cf" id="co-phone-wrap">
-                      <span class="cf__label" data-i18n="phone"></span>
-                      <input id="co-phone" name="phone" type="tel" required maxlength="30" autocomplete="tel" data-i18n-placeholder="phonePh" />
-                      <span class="cf__error" data-error-for="co-phone"></span>
+                    <label class="cf" data-co-visible="printed">
+                      <span class="cf__label"><span data-i18n="phone"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-phone" name="phone" data-co-field="customer.phone" data-required-when="printed" required autocomplete="tel" data-i18n-placeholder="phonePh" type="tel" maxlength="160" />
                     </label>
-                  </div>
+                  </fieldset>
+                  <p class="step__note" data-co-visible="ebook" data-i18n="ebookNoteForm" hidden></p>
 
-                  <p class="step__note" id="co-ebook-note" data-i18n="ebookNoteForm" hidden></p>
+                  <!-- UkrainianDeliveryFields: no live Nova Poshta search in Phase 1. -->
+                  <fieldset class="fields" id="co-ukrainian-delivery" data-co-visible="ukraine">
+                    <legend class="step__title" data-i18n="ukrainianDeliveryTitle"></legend>
+                    <p class="step__note cf--wide" id="co-np-note" data-i18n="novaPlaceholder"></p>
+                    <label class="cf cf--wide">
+                      <span class="cf__label"><span data-i18n="uaCity"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <select id="co-ua-city" name="ua-city" data-co-field="ukrainianDelivery.city" data-required-when="ukraine" required autocomplete="off" disabled data-development-placeholder aria-required="true" aria-describedby="co-np-note"><option value="" data-i18n="cityPlaceholder"></option></select>
+                    </label>
+                    <label class="cf">
+                      <span class="cf__label"><span data-i18n="deliveryType"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <select id="co-ua-type" name="ua-type" data-co-field="ukrainianDelivery.type" data-required-when="ukraine" required><option value="branch" data-i18n="novaBranch"></option><option value="locker" data-i18n="novaLocker"></option></select>
+                    </label>
+                    <label class="cf">
+                      <span class="cf__label"><span data-i18n="branch"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <select id="co-ua-branch" name="ua-branch" data-co-field="ukrainianDelivery.branch" data-required-when="ukraine" required autocomplete="off" disabled data-development-placeholder aria-required="true" aria-describedby="co-np-note"><option value="" data-i18n="branchPlaceholder"></option></select>
+                    </label>
+                  </fieldset>
 
-                  <fieldset class="fields fields--physical" id="co-physical">
-                    <label class="cf" id="co-country-wrap">
-                      <span class="cf__label" data-i18n="country"></span>
-                      <span id="co-country-slot"></span>
-                      <span class="cf__error" data-error-for="co-country"></span>
+                  <!-- InternationalDeliveryFields: neutral, optional postal/region fields. -->
+                  <fieldset class="fields" id="co-international-delivery" data-co-visible="international" hidden disabled>
+                    <legend class="step__title" data-i18n="internationalDeliveryTitle"></legend>
+                    <label class="cf">
+                      <span class="cf__label"><span data-i18n="city"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-city" name="city" data-co-field="internationalDelivery.city" data-required-when="international" required autocomplete="address-level2" type="text" maxlength="160" />
+                    </label>
+                    <label class="cf">
+                      <span class="cf__label"><span data-i18n="street"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-street" name="street" data-co-field="internationalDelivery.street" data-required-when="international" required autocomplete="address-line1" type="text" maxlength="160" />
+                    </label>
+                    <label class="cf">
+                      <span class="cf__label"><span data-i18n="building"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-building" name="building" data-co-field="internationalDelivery.building" data-required-when="international" required type="text" maxlength="160" />
+                    </label>
+                    <label class="cf">
+                      <span class="cf__label"><span data-i18n="apartment"></span> <span data-required-mark aria-hidden="true" hidden>*</span></span>
+                      <input id="co-apartment" name="apartment" data-co-field="internationalDelivery.apartment" type="text" maxlength="160" />
                     </label>
                     <label class="cf cf--wide">
-                      <span class="cf__label" data-i18n="address"></span>
-                      <input id="co-address" name="address" type="text" required maxlength="160" autocomplete="street-address" data-i18n-placeholder="addressPh" />
-                      <span class="cf__error" data-error-for="co-address"></span>
+                      <span class="cf__label"><span data-i18n="address2"></span> <span data-required-mark aria-hidden="true" hidden>*</span></span>
+                      <input id="co-address2" name="address2" data-co-field="internationalDelivery.address2" autocomplete="address-line2" type="text" maxlength="160" />
                     </label>
                     <label class="cf">
-                      <span class="cf__label" data-i18n="city"></span>
-                      <input id="co-city" name="city" type="text" required maxlength="80" autocomplete="address-level2" />
-                      <span class="cf__error" data-error-for="co-city"></span>
+                      <span class="cf__label"><span data-i18n="postal"></span> <span data-required-mark aria-hidden="true" hidden>*</span></span>
+                      <input id="co-postal" name="postal" data-co-field="internationalDelivery.postal" autocomplete="postal-code" type="text" maxlength="160" />
                     </label>
                     <label class="cf">
-                      <span class="cf__label" data-i18n="postal"></span>
-                      <input id="co-postal" name="postal" type="text" required maxlength="20" autocomplete="postal-code" />
-                      <span class="cf__error" data-error-for="co-postal"></span>
+                      <span class="cf__label"><span data-i18n="region"></span> <span data-required-mark aria-hidden="true" hidden>*</span></span>
+                      <input id="co-region" name="region" data-co-field="internationalDelivery.region" autocomplete="address-level1" type="text" maxlength="160" />
                     </label>
-                    <label class="cf cf--wide" id="co-shipping-wrap">
-                      <span class="cf__label" data-i18n="shipping"></span>
-                      <select id="co-shipping" name="shipping" required></select>
-                      <span class="cf__error" data-error-for="co-shipping"></span>
-                    </label>
-                    <p class="step__note cf--wide" id="co-shipping-none" data-i18n="shippingNone" hidden></p>
                   </fieldset>
+                  <label class="cf cf--wide" data-co-visible="printed">
+                      <span class="cf__label"><span data-i18n="comment"></span> <span data-required-mark aria-hidden="true" hidden>*</span></span>
+                      <textarea id="co-comment" name="comment" data-co-field="customer.comment" rows="3" maxlength="1000"></textarea>
+                    </label>
                 </div>
 
-                <div class="step step--summary">
-                  <h3 class="step__title" id="co-summary-title"><span class="step__num">3</span><span data-i18n="step3"></span></h3>
-                  <dl class="osum" aria-live="polite">
-                    <div class="osum__row"><dt data-i18n="sFormat"></dt><dd id="os-format"></dd></div>
+                <!-- OrderSummary: book subtotal only; payment stays unavailable. -->
+                <aside class="checkout__summary" aria-labelledby="co-summary-title">
+                  <h3 class="step__title" id="co-summary-title" data-i18n="summary"></h3>
+                  <div class="checkout__summary-book">
+                    <img id="co-summary-cover" src="assets/cover.png" alt="" data-i18n-alt="coverAlt" width="1122" height="1402" loading="lazy" />
+                    <p data-i18n="bookTitle"></p>
+                  </div>
+                  <dl class="osum" aria-live="polite" aria-atomic="true">
                     <div class="osum__row"><dt data-i18n="sLanguage"></dt><dd id="os-language"></dd></div>
-                    <div class="osum__row"><dt data-i18n="sQuantity"></dt><dd id="os-quantity"></dd></div>
+                    <div class="osum__row"><dt data-i18n="sFormat"></dt><dd id="os-format"></dd></div>
                     <div class="osum__row"><dt data-i18n="sUnit"></dt><dd id="os-unit"></dd></div>
-                    <div class="osum__row" id="os-delivery-row"><dt data-i18n="sDelivery"></dt><dd id="os-delivery"></dd></div>
-                    <div class="osum__row osum__row--total"><dt data-i18n="sTotal"></dt><dd id="os-total"></dd></div>
+                    <div class="osum__row osum__row--delivery" id="os-delivery-row"><dt data-i18n="sDelivery"></dt><dd id="os-delivery"></dd></div>
+                    <div class="osum__row osum__row--total" id="os-subtotal-row"><dt data-i18n="sSubtotal"></dt><dd id="os-subtotal"></dd></div>
                   </dl>
-                  <p class="checkout__error" id="co-error" role="alert" hidden></p>
-                  <button type="submit" class="btn btn--pay" id="co-pay" data-i18n="pay"></button>
-                  <p class="checkout__secure" id="co-secure" data-i18n="secure" hidden></p>
-                </div>
+                  <button type="button" class="btn btn--pay" id="co-pay" data-i18n="pay" aria-describedby="co-payment-note" disabled></button>
+                  <p class="checkout__payment-note" id="co-payment-note" data-i18n="paymentUnavailable"></p>
+                </aside>
               </div>
             </form>
           </div>
@@ -375,7 +376,7 @@
             <a href="https://t.me/Alona_Kovalenko" target="_blank" rel="noopener noreferrer">Telegram</a>
             <a href="https://www.instagram.com/alona_kovalenkooo/" target="_blank" rel="noopener noreferrer">Instagram</a>
             <a href="https://www.linkedin.com/in/alona-kovalenko-qa-engineer2402" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            <a href="mailto:alyona.kovalenko24@gmail.com">alyona.kovalenko24@gmail.com</a>
+            <a href="mailto:transformationjourneybyalona@gmail.com">transformationjourneybyalona@gmail.com</a>
           </nav>
         </div>
         <p class="footer__copy" data-i18n="copyright">© 2026 Альона Коваленко</p>
