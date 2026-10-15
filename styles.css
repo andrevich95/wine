@@ -1453,11 +1453,185 @@ html.is-choosing-language {
 }
 
 /* --------------------------------------------------------------------------
+   Manifesto
+   -------------------------------------------------------------------------- */
+
+.manifest {
+  padding-inline: 1.5rem;
+  background-color: var(--sand);
+}
+
+.manifest__inner {
+  max-width: 76rem;
+  margin-inline: auto;
+}
+
+.manifest__title {
+  margin-bottom: 2.5rem;
+}
+
+.manifest__columns {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.manifest__column {
+  min-width: 0;
+}
+
+.manifest__column h3 {
+  margin-bottom: 1.5rem;
+  color: var(--burgundy);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.manifest__column p {
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.manifest__column p + p {
+  margin-top: 1rem;
+}
+
+.manifest__column + .manifest__column {
+  border-top: 1px solid var(--ink-30);
+  padding-top: 2.5rem;
+}
+
+/* Follow the existing language switch, including its saved initial choice. */
+.manifest__localized[lang="en"],
+html[lang="en"] .manifest__localized[lang="uk"] {
+  display: none;
+}
+
+html[lang="en"] .manifest__columns[lang="en"] {
+  display: grid;
+}
+
+html[lang="en"] .manifest__reflection[lang="en"] {
+  display: block;
+}
+
+.manifest__film {
+  max-width: 60rem;
+  margin: 4rem auto 0;
+}
+
+.manifest__video {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-sm);
+  background-color: var(--chocolate);
+  overflow: hidden;
+}
+
+.manifest__video img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.manifest__play {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background: var(--burgundy);
+  color: var(--ivory);
+  box-shadow: 0 4px 24px #0005;
+}
+
+.manifest__video:hover .manifest__play {
+  background: var(--wine-deep);
+}
+
+.manifest__video-title {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 2rem 1.5rem 1rem;
+  color: var(--ivory);
+  background: linear-gradient(transparent, #000b);
+}
+
+.manifest__film figcaption {
+  margin-top: 1rem;
+  text-align: right;
+  font-size: 0.875rem;
+}
+
+.manifest__film a {
+  color: var(--burgundy);
+  text-underline-offset: 0.25em;
+}
+
+.manifest__film a:focus-visible {
+  outline: 2px solid var(--burgundy);
+  outline-offset: 4px;
+}
+
+.manifest__reflection {
+  max-width: 48rem;
+  margin: 3rem auto 0;
+  text-align: center;
+}
+
+.manifest__intro {
+  line-height: 1.7;
+}
+
+.manifest__quote {
+  margin-top: 1.75rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.375rem, 2.5vw, 1.875rem);
+  font-style: italic;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.manifest__closing {
+  margin-top: 2rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  line-height: 1.3;
+  color: var(--burgundy);
+  text-wrap: balance;
+}
+
+@media (min-width: 64rem) {
+  .manifest {
+    padding-inline: 3rem;
+  }
+
+  .manifest__columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  .manifest__column + .manifest__column {
+    padding-top: 0;
+    padding-left: 2rem;
+    border-top: 0;
+    border-left: 1px solid var(--ink-30);
+  }
+}
+
+/* --------------------------------------------------------------------------
    12. Checkout — local Phase 1 interface
    -------------------------------------------------------------------------- */
 
 .checkout {
-  background-color: var(--sand);
+  background-color: #ead8dc;
   padding-block: 6rem;
   scroll-margin-top: 4.75rem;
 }

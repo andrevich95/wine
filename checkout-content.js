@@ -38,6 +38,8 @@ window.CHECKOUT_COPY = {
     aboutEyebrow: "Про книгу",
     previewAria: "Уривок книги",
     authorEyebrow: "Автор",
+    manifestTitle: "Маніфест",
+    manifestVideoLink: "Лана Дель Рей — дивитися на YouTube ↗",
     eyebrow: "Придбати книгу",
     title: "Оберіть своє видання",
     lead: "Українською — друкована або електронна книга. Англійською — лише друкована.",
@@ -94,6 +96,8 @@ window.CHECKOUT_COPY = {
   },
   EN: {
     locale: "en-GB",
+    manifestTitle: "Manifesto",
+    manifestVideoLink: "Lana Del Rey — watch on YouTube ↗",
     navBook: "About the Book",
     bookTitle: "Journey of Transformations",
     navAria: "Main navigation",
