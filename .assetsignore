@@ -1,0 +1,12 @@
+# Publish only the website files. Keep source documents, tests, and Git data local.
+*
+!/index.html
+!/styles.css
+!/app.js
+!/book-content.js
+!/checkout-content.js
+!/assets/
+!/assets/*.png
+!/assets/*.jpg
+!/assets/*.svg
+!/assets/*.ico

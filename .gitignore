@@ -35,6 +35,7 @@ sheets.access.json
 # The site ships as plain HTML/CSS/JS with no dependencies. These exist so
 # that adding a formatter or a bundler later cannot commit its output.
 node_modules/
+.wrangler/
 dist/
 build/
 .cache/
