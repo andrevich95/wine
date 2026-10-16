@@ -1467,7 +1467,9 @@ html.is-choosing-language {
 }
 
 .manifest__title {
-  margin-bottom: 2.5rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  color: var(--burgundy);
+  text-align: center;
 }
 
 .manifest__columns {
@@ -2150,3 +2152,18 @@ html[lang="en"] .manifest__reflection[lang="en"] {
 }
 
 
+
+/* Checkout validation uses the existing wine accent and field spacing. */
+.checkout .cf__error {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--wine);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.checkout .cf__error[hidden] { display: none; }
+.checkout .cf [aria-invalid="true"] { border-bottom-color: var(--wine); }
+
+.checkout #os-delivery { overflow-wrap: anywhere; }
+
+.checkout #co-google-form-group { margin-bottom: 1rem; }

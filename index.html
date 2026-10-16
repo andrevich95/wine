@@ -210,8 +210,8 @@
         <section class="featured" aria-label="Цитата з книги" data-i18n-aria="quoteAria">
           <blockquote class="featured__inner">
             <span class="featured__rule" aria-hidden="true"></span>
-            <p class="featured__lead" id="fq-lead">Бо я не хочу прожити правильне життя.</p>
-            <p class="featured__strong" id="fq-strong">Я хочу прожити СВОЄ.</p>
+            <p class="featured__lead" id="fq-lead">Подорож не завжди змінює життя.</p>
+            <p class="featured__strong" id="fq-strong">Але іноді допомагає почути себе.</p>
           </blockquote>
         </section>
 
@@ -244,7 +244,7 @@
         <!-- ============================ 05 MANIFESTO ============================ -->
         <section class="section manifest" id="manifest" aria-labelledby="manifest-title">
           <div class="manifest__inner">
-            <h2 class="eyebrow eyebrow--wine manifest__title" id="manifest-title" data-i18n="manifestTitle">Маніфест</h2>
+            <h2 class="section-heading manifest__title" id="manifest-title" data-i18n="manifestTitle">Маніфест</h2>
             <div class="manifest__columns manifest__localized" lang="uk">
               <article class="manifest__column">
                 <h3>ДОСЛІДЖЕННЯ</h3>
@@ -388,38 +388,34 @@
                     <p class="step__note cf--wide" id="co-name-hint" data-co-visible="ukraine" data-i18n="ukrainianNameHint"></p>
                     <label class="cf">
                       <span class="cf__label"><span data-i18n="firstName"></span> <span data-required-mark aria-hidden="true">*</span></span>
-                      <input id="co-first-name" name="first-name" data-co-field="customer.firstName" data-required-when="printed" required autocomplete="given-name" data-i18n-placeholder="firstNamePh" type="text" maxlength="160" />
+                      <input id="co-first-name" name="first-name" data-co-field="customer.firstName" data-required-when="always" required autocomplete="given-name" data-i18n-placeholder="firstNamePh" type="text" maxlength="160" />
                     </label>
                     <label class="cf" data-co-visible="printed">
                       <span class="cf__label"><span data-i18n="lastName"></span> <span data-required-mark aria-hidden="true">*</span></span>
                       <input id="co-last-name" name="last-name" data-co-field="customer.lastName" data-required-when="printed" required autocomplete="family-name" data-i18n-placeholder="lastNamePh" type="text" maxlength="160" />
                     </label>
+                    <label class="cf" data-co-visible="printed">
+                      <span class="cf__label"><span data-i18n="phone"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-phone" name="phone" data-co-field="customer.phone" data-required-when="printed" required autocomplete="tel" data-i18n-placeholder="phonePh" type="tel" maxlength="160" />
+                      <span class="step__note" id="co-phone-hint" data-co-visible="ukraine" data-i18n="phoneHint"></span>
+                    </label>
                     <label class="cf">
                       <span class="cf__label"><span data-i18n="email"></span> <span data-required-mark aria-hidden="true">*</span></span>
                       <input id="co-email" name="email" data-co-field="customer.email" data-required-when="always" required autocomplete="email" data-i18n-placeholder="emailPh" type="email" maxlength="160" />
                     </label>
-                    <label class="cf" data-co-visible="printed">
-                      <span class="cf__label"><span data-i18n="phone"></span> <span data-required-mark aria-hidden="true">*</span></span>
-                      <input id="co-phone" name="phone" data-co-field="customer.phone" data-required-when="printed" required autocomplete="tel" data-i18n-placeholder="phonePh" type="tel" maxlength="160" />
-                    </label>
                   </fieldset>
-                  <p class="step__note" data-co-visible="ebook" data-i18n="ebookNoteForm" hidden></p>
 
-                  <!-- UkrainianDeliveryFields: no live Nova Poshta search in Phase 1. -->
+                  <!-- Manual Ukrainian branch delivery. -->
                   <fieldset class="fields" id="co-ukrainian-delivery" data-co-visible="ukraine">
                     <legend class="step__title" data-i18n="ukrainianDeliveryTitle"></legend>
-                    <p class="step__note cf--wide" id="co-np-note" data-i18n="novaPlaceholder"></p>
                     <label class="cf cf--wide">
                       <span class="cf__label"><span data-i18n="uaCity"></span> <span data-required-mark aria-hidden="true">*</span></span>
-                      <select id="co-ua-city" name="ua-city" data-co-field="ukrainianDelivery.city" data-required-when="ukraine" required autocomplete="off" disabled data-development-placeholder aria-required="true" aria-describedby="co-np-note"><option value="" data-i18n="cityPlaceholder"></option></select>
+                      <input id="co-ua-city" name="ua-city" data-co-field="ukrainianDelivery.city" data-required-when="ukraine" required type="text" data-i18n-placeholder="cityPlaceholder" />
                     </label>
                     <label class="cf">
-                      <span class="cf__label"><span data-i18n="deliveryType"></span> <span data-required-mark aria-hidden="true">*</span></span>
-                      <select id="co-ua-type" name="ua-type" data-co-field="ukrainianDelivery.type" data-required-when="ukraine" required><option value="branch" data-i18n="novaBranch"></option><option value="locker" data-i18n="novaLocker"></option></select>
-                    </label>
-                    <label class="cf">
-                      <span class="cf__label"><span data-i18n="branch"></span> <span data-required-mark aria-hidden="true">*</span></span>
-                      <select id="co-ua-branch" name="ua-branch" data-co-field="ukrainianDelivery.branch" data-required-when="ukraine" required autocomplete="off" disabled data-development-placeholder aria-required="true" aria-describedby="co-np-note"><option value="" data-i18n="branchPlaceholder"></option></select>
+                      <span class="cf__label"><span data-i18n="branchLabel"></span> <span data-required-mark aria-hidden="true">*</span></span>
+                      <input id="co-ua-branch" name="ua-branch" data-co-field="ukrainianDelivery.branch" data-required-when="ukraine" required type="text" inputmode="numeric" data-i18n-placeholder="branchPlaceholder" aria-describedby="co-branch-hint" />
+                      <span class="step__note" id="co-branch-hint" data-i18n="branchHint"></span>
                     </label>
                   </fieldset>
 
@@ -461,7 +457,7 @@
                     </label>
                 </div>
 
-                <!-- OrderSummary: book subtotal only; payment stays unavailable. -->
+                <!-- OrderSummary: save the request before payment integration is added. -->
                 <aside class="checkout__summary" aria-labelledby="co-summary-title">
                   <h3 class="step__title" id="co-summary-title" data-i18n="summary"></h3>
                   <div class="checkout__summary-book">
@@ -475,8 +471,9 @@
                     <div class="osum__row osum__row--delivery" id="os-delivery-row"><dt data-i18n="sDelivery"></dt><dd id="os-delivery"></dd></div>
                     <div class="osum__row osum__row--total" id="os-subtotal-row"><dt data-i18n="sSubtotal"></dt><dd id="os-subtotal"></dd></div>
                   </dl>
-                  <button type="button" class="btn btn--pay" id="co-pay" data-i18n="pay" aria-describedby="co-payment-note" disabled></button>
-                  <p class="checkout__payment-note" id="co-payment-note" data-i18n="paymentUnavailable"></p>
+                  <p class="step__note" id="co-fulfillment-note" aria-live="polite"></p>
+                  <button type="submit" class="btn btn--pay" id="co-pay" data-i18n="pay" aria-describedby="co-fulfillment-note co-payment-note" disabled></button>
+                  <p class="checkout__payment-note" id="co-payment-note" role="status" aria-live="polite"></p>
                 </aside>
               </div>
             </form>

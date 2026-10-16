@@ -21,7 +21,7 @@
 window.BOOK_PREVIEW = {
   UA: {
     lang: "uk",
-    quote: { lead: "Бо я не хочу прожити правильне життя.", strong: "Я хочу прожити СВОЄ." },
+    quote: { lead: "Подорож не завжди змінює життя.", strong: "Але іноді допомагає почути себе." },
     ui: {
       coverLabel: "Відкрити книгу «Подорож трансформацій»",
       coverAction: "Відкрити книгу",
@@ -75,7 +75,7 @@ window.BOOK_PREVIEW = {
 
   EN: {
     lang: "en",
-    quote: { lead: "Because I don’t want to live the “right” life.", strong: "I want to live MY life." },
+    quote: { lead: "“A journey doesn’t always change your life.", strong: "But sometimes it helps you hear yourself.”" },
     ui: {
       coverLabel: "Open the book “Journey of Transformations”",
       coverAction: "Open the book",

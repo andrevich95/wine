@@ -10,11 +10,32 @@
      Product language and delivery destination are deliberately independent. */
   var CHECKOUT = {
     variants: {
-      "physical-UA": { id: "physical-ua", format: "physical", language: "UA", currency: "UAH", price: 1000 },
-      "ebook-UA": { id: "ebook-ua", format: "ebook", language: "UA", currency: "UAH", price: 800 },
+      "physical-UA": { id: "physical-ua", format: "physical", language: "UA", currency: "UAH", price: 1200 },
+      "ebook-UA": { id: "ebook-ua", format: "ebook", language: "UA", currency: "UAH", price: 900 },
       "physical-EN": { id: "physical-en", format: "physical", language: "EN", currency: "EUR", price: 35 },
     },
     cover: "assets/cover.png",
+    ebookOrderForm: {
+      url: "https://docs.google.com/forms/d/e/1FAIpQLScMnV-1EPRyRzQu14mLskPbQNe2lI2omj1C5uZv6ZAOq1csFw/viewform",
+      entries: { firstName: "307735541", email: "2044579426" },
+    },
+    ukraineOrderForm: {
+      url: "https://docs.google.com/forms/d/e/1FAIpQLSci-pms-g-hM0PcxCcMgZqMaycDPAwF8oSzfDbIgjMlz-rXRA/viewform",
+      entries: {
+        country: "1010262154", firstName: "307735541", lastName: "1551863023",
+        phone: "1061640817", email: "2044579426", city: "778705268",
+        branch: "665549530", comment: "1168496972",
+      },
+    },
+    internationalOrderForm: {
+      url: "https://docs.google.com/forms/d/e/1FAIpQLSfA2TMQS8GFPAEKAcxgBxgPwTEfGP7XO8s8cHvOLc2pMqOl1w/viewform",
+      entries: {
+        country: "1010262154", firstName: "307735541", lastName: "1551863023",
+        phone: "1061640817", email: "2044579426", city: "778705268",
+        street: "665549530", building: "1168496972", address2: "720517786",
+        postal: "1057800513", region: "252242427", comment: "1159017944",
+      },
+    },
     // Local country list only; shipping rates and country-specific rules are not configured.
     countries: [
       { code: "UA", label: { UA: "Україна", EN: "Ukraine" } },
@@ -773,7 +794,7 @@
   }
 
   /* ------------------------------------------------------------------------
-     Checkout — Phase 1, local UI only. No submission or payment integration.
+     Checkout — validate and submit to the existing response tables. No payment integration.
      ------------------------------------------------------------------------ */
 
   var coForm = document.getElementById("co-form");
@@ -783,13 +804,31 @@
       selectedVariant: "physical-UA",
       customer: { firstName: "", lastName: "", email: "", phone: "", comment: "" },
       deliveryCountry: "UA",
-      ukrainianDelivery: { city: "", type: "branch", branch: "" },
+      ukrainianDelivery: { city: "", branch: "" },
       internationalDelivery: { city: "", street: "", building: "", apartment: "", address2: "", postal: "", region: "" },
     };
     var variantCards = {};
     var countryOptions = {};
     var coCountry = document.getElementById("co-country");
     var coPay = document.getElementById("co-pay");
+    var orderState = "idle";
+    var sentPayloads = new Set();
+    var orderRevision = 0;
+
+    function renderOrderStatus() {
+      coPay.disabled = orderState === "sending" || orderState === "sent" || !hasPrice(currentVariant());
+      coPay.textContent = t(orderState === "sending" ? "orderSending" : orderState === "sent" ? "orderSent" : "pay");
+      coForm.setAttribute("aria-busy", String(orderState === "sending"));
+      document.getElementById("co-payment-note").textContent = t(
+        orderState === "sent" ? "orderSentNote" : orderState === "error" ? "orderError" : "paymentUnavailable"
+      );
+    }
+
+    function resetOrderStatus() {
+      orderRevision += 1;
+      if (orderState !== "sending") orderState = "idle";
+      renderOrderStatus();
+    }
 
     function t(key) {
       return window.CHECKOUT_COPY[Lang.get()][key];
@@ -863,25 +902,60 @@
         var path = field.dataset.coField.split(".");
         field.value = path.length === 1 ? co[path[0]] : co[path[0]][path[1]];
         var hidden = Boolean(field.closest("[hidden]"));
-        var placeholder = field.hasAttribute("data-development-placeholder");
         var rule = field.dataset.requiredWhen;
         var required = !hidden && (rule === "always" || Boolean(visible[rule]));
-        field.disabled = hidden || placeholder;
+        field.disabled = hidden;
         field.required = required;
-        if (placeholder) field.setAttribute("aria-required", String(required));
         var label = field.closest(".cf");
         label.querySelector("[data-required-mark]").hidden = !required;
+        var labelText = label.querySelector("[data-i18n]");
+        labelText.id = field.id + "-label";
+        field.setAttribute("aria-labelledby", labelText.id);
       });
-      ["co-first-name", "co-last-name"].forEach(function (id) {
-        var input = document.getElementById(id);
-        if (mode === "ukraine") input.setAttribute("aria-describedby", "co-name-hint");
-        else input.removeAttribute("aria-describedby");
+      coForm.querySelectorAll("[data-co-field]").forEach(function (field) {
+        showError(field, field.disabled ? "" : (errors[field.id] ? validateField(field) : ""));
       });
-      // No branch records are fabricated. Both controls stay disabled in Phase 1.
-      var locker = co.ukrainianDelivery.type === "locker";
-      var branch = document.getElementById("co-ua-branch");
-      branch.closest(".cf").querySelector("[data-i18n]").textContent = t(locker ? "lockerLabel" : "branchLabel");
-      branch.options[0].textContent = t(locker ? "lockerPlaceholder" : "branchPlaceholder");
+    }
+
+    var errors = {};
+    function validateField(field) {
+      if (field.disabled) return "";
+      var value = field.value.trim();
+      var ukraine = deliveryMode() === "ukraine";
+      if (ukraine && (field.id === "co-first-name" || field.id === "co-last-name")) {
+        if (!/^[А-ЩЬЮЯЄІЇҐа-щьюяєіїґ '’ʼ-]+$/.test(field.value) || !/[А-ЩЬЮЯЄІЇҐа-щьюяєіїґ]/.test(value))
+          return field.id === "co-first-name" ? "firstNameError" : "lastNameError";
+      }
+      if (ukraine && field.id === "co-phone" && !/^\+380[0-9]{9}$/.test(value.replace(/[ ()-]/g, ""))) return "phoneError";
+      if (field.id === "co-email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "emailError";
+      if (ukraine && field.id === "co-ua-city" && !value) return "cityError";
+      if (ukraine && field.id === "co-ua-branch" && !/^[0-9]*[1-9][0-9]*$/.test(value)) return "branchError";
+      return field.required && !value ? "requiredError" : "";
+    }
+
+    function showError(field, key) {
+      errors[field.id] = key;
+      var errorId = field.id + "-error";
+      var error = document.getElementById(errorId);
+      if (!error) {
+        error = document.createElement("span");
+        error.id = errorId;
+        error.className = "cf__error";
+        error.setAttribute("aria-live", "polite");
+        field.closest(".cf").appendChild(error);
+      }
+      error.textContent = key ? t(key) : "";
+      error.hidden = !key;
+      field.setAttribute("aria-invalid", String(Boolean(key)));
+      var descriptions = [];
+      if (!field.disabled && deliveryMode() === "ukraine") {
+        if (field.id === "co-first-name" || field.id === "co-last-name") descriptions.push("co-name-hint");
+        if (field.id === "co-phone") descriptions.push("co-phone-hint");
+        if (field.id === "co-ua-branch") descriptions.push("co-branch-hint");
+      }
+      if (key) descriptions.push(errorId);
+      if (descriptions.length) field.setAttribute("aria-describedby", descriptions.join(" "));
+      else field.removeAttribute("aria-describedby");
     }
 
     /* OrderSummary: one book, with shipping explicitly separate from subtotal. */
@@ -894,9 +968,16 @@
       document.getElementById("os-unit").textContent = priceLabel(variant);
       document.getElementById("os-delivery-row").hidden = mode === "ebook";
       document.getElementById("os-delivery").textContent = mode === "ebook" ? "" : t(mode === "ukraine" ? "ukraineShipping" : "internationalShipping");
+      if (mode === "ukraine") {
+        var destination = [];
+        if (co.ukrainianDelivery.city.trim()) destination.push(t("uaCity") + ": " + co.ukrainianDelivery.city.trim());
+        if (co.ukrainianDelivery.branch.trim()) destination.push(t("branchLabel") + ": " + co.ukrainianDelivery.branch.trim());
+        if (destination.length) document.getElementById("os-delivery").textContent += " " + destination.join(", ");
+      }
       document.getElementById("os-subtotal-row").hidden = !hasPrice(variant);
       document.getElementById("os-subtotal").textContent = hasPrice(variant) ? priceLabel(variant) : "";
-      coPay.disabled = true;
+      document.getElementById("co-fulfillment-note").textContent = t(mode === "ebook" ? "ebookFulfillment" : "printedFulfillment");
+      renderOrderStatus();
     }
 
     function renderCheckout() {
@@ -942,27 +1023,109 @@
       var field = event.target;
       var binding = field.dataset.coField;
       if (!binding || field.disabled) return;
+      resetOrderStatus();
       var path = binding.split(".");
-      var previous = path.length === 1 ? co[path[0]] : co[path[0]][path[1]];
       if (path.length === 1) co[path[0]] = field.value;
       else co[path[0]][path[1]] = field.value;
-      if ((binding === "ukrainianDelivery.city" || binding === "ukrainianDelivery.type") && previous !== field.value) {
-        co.ukrainianDelivery.branch = "";
-      }
-      if (binding === "deliveryCountry" || binding.indexOf("ukrainianDelivery.") === 0) renderCheckout();
+      if (errors[field.id]) showError(field, validateField(field));
+      if (binding === "deliveryCountry") renderCheckout();
+      else if (binding.indexOf("ukrainianDelivery.") === 0) renderSummary();
     }
 
+    coForm.addEventListener("focusout", function (event) {
+      var field = event.target;
+      if (!field.dataset.coField || field.disabled) return;
+      if (field.id === "co-email") {
+        field.value = field.value.trim();
+        updateField(event);
+      }
+      showError(field, validateField(field));
+    });
     coForm.addEventListener("input", updateField);
     coForm.addEventListener("change", function (event) {
       if (event.target.name === "variant") {
         if (!Object.prototype.hasOwnProperty.call(CHECKOUT.variants, event.target.value)) return;
         co.selectedVariant = event.target.value;
+        resetOrderStatus();
         renderCheckout();
       } else updateField(event);
     });
-    // Also suppress Enter-key submission. There are no network/order handlers.
-    coForm.addEventListener("submit", function (event) {
+    coForm.addEventListener("submit", async function (event) {
       event.preventDefault();
+      if (orderState === "sending" || orderState === "sent" || !hasPrice(currentVariant())) return;
+      var mode = deliveryMode();
+      var firstInvalid = null;
+      coForm.querySelectorAll("[data-co-field]").forEach(function (field) {
+        if (field.disabled) return;
+        if (field.id === "co-email") field.value = field.value.trim();
+        updateField({ target: field });
+        var key = validateField(field);
+        showError(field, key);
+        if (key && !firstInvalid) firstInvalid = field;
+      });
+      if (firstInvalid) {
+        firstInvalid.focus();
+        return;
+      }
+      var variant = currentVariant();
+      var edition = (variant.language === "UA" ? "Ukrainian" : "English") + (mode === "ebook" ? " — E-book" : " — Printed Book");
+      var answers = {
+        country: CHECKOUT.countries.find(function (country) { return country.code === co.deliveryCountry; }).label.EN,
+        firstName: co.customer.firstName.trim(), lastName: co.customer.lastName.trim(),
+        phone: mode === "ukraine" ? co.customer.phone.trim().replace(/[ ()-]/g, "") : co.customer.phone.trim(), email: co.customer.email.trim(),
+        comment: "Book: " + edition + (co.customer.comment.trim() ? "\n\n" + co.customer.comment.trim() : ""),
+      };
+      var formConfig = mode === "international" ? CHECKOUT.internationalOrderForm : CHECKOUT.ukraineOrderForm;
+      if (mode === "ebook") {
+        formConfig = CHECKOUT.ebookOrderForm;
+        answers = {
+          firstName: co.customer.firstName.trim(),
+          email: co.customer.email.trim(),
+        };
+      } else if (mode === "ukraine") {
+        answers.city = co.ukrainianDelivery.city.trim();
+        answers.branch = co.ukrainianDelivery.branch.trim();
+      } else {
+        var address = co.internationalDelivery;
+        ["city", "street", "building", "postal", "region"].forEach(function (key) {
+          answers[key] = address[key].trim();
+        });
+        // The Google Form has no apartment field; preserve it in address line 2.
+        answers.address2 = [address.apartment.trim() ? "Apartment: " + address.apartment.trim() : "", address.address2.trim()].filter(Boolean).join("; ");
+      }
+      var endpoint = formConfig.url.replace(/\/viewform$/, "/formResponse");
+      var body = new URLSearchParams();
+      Object.keys(answers).forEach(function (key) {
+        body.set("entry." + formConfig.entries[key], answers[key]);
+      });
+      var payloadKey = endpoint + "?" + body.toString();
+      if (sentPayloads.has(payloadKey)) {
+        orderState = "sent";
+        renderOrderStatus();
+        return;
+      }
+      var submittedRevision = orderRevision;
+      orderState = "sending";
+      renderOrderStatus();
+      var controller = new AbortController();
+      var timeout = setTimeout(function () { controller.abort(); }, 20000);
+      try {
+        // Google Forms accepts a simple POST but does not expose its response
+        // cross-origin. An opaque response confirms dispatch, not a saved row.
+        // Keep the UI at "confirmation pending"; never claim payment or saving.
+        var response = await fetch(endpoint, {
+          method: "POST", mode: "no-cors", credentials: "omit",
+          body: body, signal: controller.signal,
+        });
+        if (response.type !== "opaque" && !response.ok) throw new Error("Order submission failed");
+        sentPayloads.add(payloadKey);
+        orderState = orderRevision === submittedRevision ? "sent" : "idle";
+      } catch (error) {
+        orderState = "error";
+      } finally {
+        clearTimeout(timeout);
+        renderOrderStatus();
+      }
     });
     document.addEventListener("sitelangchange", applyCopy);
 

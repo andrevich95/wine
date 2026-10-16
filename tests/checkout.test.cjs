@@ -46,7 +46,8 @@ class Element {
   querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
   closest(selector) { return this.matches(selector) ? this : this.parentElement?.closest(selector) || null; }
   addEventListener(name, callback) { (this.listeners[name] ||= []).push(callback); }
-  dispatchEvent(event) { for (const listener of this.listeners[event.type] || []) listener(event); }
+  dispatchEvent(event) { return Promise.all((this.listeners[event.type] || []).map(listener => listener(event))); }
+  focus() { this.owner.activeElement = this; }
 }
 for (const key of ['hidden', 'disabled', 'required', 'checked']) {
   Object.defineProperty(Element.prototype, key, {
@@ -85,11 +86,13 @@ function documentFromHTML(html) {
   doc.documentElement = doc.querySelector('html');
   return doc;
 }
-function setup(language = 'UA', configure = () => {}) {
+function setup(language = 'UA', configure = () => {}, submit = async () => ({ type: 'opaque', ok: false })) {
   const document = documentFromHTML(read('index.html'));
-  const window = { localStorage: { setItem() { throw Error('Personal data must not be persisted'); } }, location: { assign() { throw Error('Payment redirect'); } } };
-  const context = vm.createContext({ document, window, Lang: { get: () => language }, Intl,
-    fetch() { throw Error('Checkout must not make network requests'); } });
+  const opened = [];
+  const requests = [];
+  const window = { open(...args) { opened.push(args); }, localStorage: { setItem() { throw Error('Personal data must not be persisted'); } }, location: { assign() { throw Error('Payment redirect'); } } };
+  const context = vm.createContext({ document, window, Lang: { get: () => language }, Intl, URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
+    fetch(url, options) { requests.push({ url, options }); return submit(url, options); } });
   vm.runInContext(read('checkout-content.js'), context);
   const source = read('app.js');
   const configStart = source.indexOf('  var CHECKOUT =');
@@ -108,7 +111,7 @@ function setup(language = 'UA', configure = () => {}) {
   const select = value => form.dispatchEvent({ type: 'change', target: { name: 'variant', value, dataset: {} } });
   const translate = code => { language = code; document.dispatchEvent({ type: 'sitelangchange' }); };
   const active = () => form.querySelectorAll('[data-co-field]').filter(field => !field.disabled).map(field => field.id).sort();
-  return { context, document, form, get, change, select, translate, active };
+  return { context, document, form, get, change, select, translate, active, opened, requests, proceed: () => form.dispatchEvent({ type: 'submit', preventDefault() {} }) };
 }
 
 test('exactly three native-radio variants with existing prices and no English e-book', () => {
@@ -116,8 +119,8 @@ test('exactly three native-radio variants with existing prices and no English e-
   const radios = s.form.querySelectorAll('[name="variant"]');
   assert.deepEqual(radios.map(r => r.value), ['physical-UA', 'ebook-UA', 'physical-EN']);
   assert.ok(radios.every(r => r.type === 'radio'));
-  assert.equal(s.context.CHECKOUT.variants['physical-UA'].price, 1000);
-  assert.equal(s.context.CHECKOUT.variants['ebook-UA'].price, 800);
+  assert.equal(s.context.CHECKOUT.variants['physical-UA'].price, 1200);
+  assert.equal(s.context.CHECKOUT.variants['ebook-UA'].price, 900);
   assert.equal(s.context.CHECKOUT.variants['physical-EN'].price, 35);
   s.select('ebook-EN');
   assert.equal(s.context.co.selectedVariant, 'physical-UA');
@@ -131,26 +134,25 @@ test('both printed books support Ukraine and international addresses independent
     s.change('co-country', 'UA');
     assert.ok(!s.get('co-ukrainian-delivery').hidden);
     assert.ok(s.get('co-international-delivery').hidden);
-    assert.ok(s.get('co-ua-city').disabled && s.get('co-ua-branch').disabled);
-    assert.equal(s.get('co-ua-city').getAttribute('aria-required'), 'true');
-    for (const id of ['co-country','co-first-name','co-last-name','co-email','co-phone','co-ua-type']) assert.ok(s.get(id).required);
+    assert.ok(!s.get('co-ua-city').disabled && !s.get('co-ua-branch').disabled);
+    for (const id of ['co-country','co-first-name','co-last-name','co-email','co-phone','co-ua-city','co-ua-branch']) assert.ok(s.get(id).required);
     for (const id of ['co-street','co-building','co-postal']) assert.ok(s.get(id).disabled && !s.get(id).required);
     s.change('co-country', 'PL');
     assert.ok(s.get('co-ukrainian-delivery').hidden);
     assert.ok(!s.get('co-international-delivery').hidden);
     for (const id of ['co-city','co-street','co-building']) assert.ok(s.get(id).required && !s.get(id).disabled);
     for (const id of ['co-apartment','co-address2','co-postal','co-region','co-comment']) assert.ok(!s.get(id).required && !s.get(id).disabled);
-    assert.equal(s.get('co-ua-type').required, false);
+    assert.equal(s.get('co-ua-branch').required, false);
     assert.equal(s.get('os-delivery').textContent, 'Вартість доставки буде розраховано.');
   }
 });
 
-test('e-book has only optional first name and required email; no shipping summary', () => {
+test('e-book requires first name and email; no shipping summary', () => {
   const s = setup();
   s.select('ebook-UA');
   assert.deepEqual(s.active(), ['co-email','co-first-name']);
   assert.ok(s.get('co-email').required);
-  assert.equal(s.get('co-first-name').required, false);
+  assert.equal(s.get('co-first-name').required, true);
   assert.ok(s.get('os-delivery-row').hidden);
   assert.equal(s.get('os-delivery').textContent, '');
   for (const field of s.form.querySelectorAll('[data-co-field]')) {
@@ -180,25 +182,13 @@ test('variant, country, customer and address data survive option and interface-l
   assert.equal(s.get('co-country').value, 'PL');
   for (const [id, value] of [['co-first-name','Test'],['co-last-name','Reader'],['co-email','reader@example.com'],['co-city','Test city'],['co-street','Test street'],['co-building','10'],['co-comment','Test comment']]) assert.equal(s.get(id).value, value);
   s.change('co-country', 'UA');
-  s.change('co-ua-type', 'locker');
+  s.change('co-ua-city', 'Київ');
+  s.change('co-ua-branch', '25');
   s.translate('EN');
-  assert.equal(s.get('co-ua-type').value, 'locker');
-  assert.match(s.get('co-ua-branch').options[0].textContent, /locker.*development/);
+  assert.equal(s.get('co-ua-city').value, 'Київ');
+  assert.equal(s.get('co-ua-branch').value, '25');
   s.change('co-country', 'PL');
   assert.equal(s.get('co-street').value, 'Test street');
-});
-
-test('incompatible Nova Poshta branch state clears when city or delivery type changes', () => {
-  const s = setup();
-  s.context.co.ukrainianDelivery.branch = 'test-only-stale-value';
-  s.change('co-ua-type', 'locker');
-  assert.equal(s.context.co.ukrainianDelivery.branch, '');
-  // Exercise the future city-control integration without presenting mock records in the UI.
-  s.context.co.ukrainianDelivery.branch = 'test-only-stale-value';
-  s.get('co-ua-city').disabled = false;
-  s.change('co-ua-city', 'test-only-city');
-  assert.equal(s.context.co.ukrainianDelivery.branch, '');
-  assert.ok(s.get('co-ua-city').disabled);
 });
 
 test('missing prices have localized placeholders and no calculated subtotal', () => {
@@ -245,7 +235,7 @@ test('plain optional labels, required asterisks, and neutral phone placeholders 
   }
 });
 
-test('all checkout paths keep payment disabled, suppress submission, and use complete translations', () => {
+test('all checkout paths use one submit button, validate, and have complete translations', async () => {
   const s = setup();
   for (const language of ['UA','EN']) {
     s.translate(language);
@@ -253,10 +243,10 @@ test('all checkout paths keep payment disabled, suppress submission, and use com
       s.select(variant);
       for (const country of ['UA','PL']) {
         if (variant !== 'ebook-UA') s.change('co-country', country);
-        assert.ok(s.get('co-pay').disabled);
-        assert.equal(s.get('co-pay').type, 'button');
+        assert.equal(s.get('co-pay').disabled, false);
+        assert.equal(s.get('co-pay').type, 'submit');
         let prevented = false;
-        s.form.dispatchEvent({ type: 'submit', preventDefault() { prevented = true; } });
+        await s.form.dispatchEvent({ type: 'submit', preventDefault() { prevented = true; } });
         assert.ok(prevented);
       }
     }
@@ -266,6 +256,233 @@ test('all checkout paths keep payment disabled, suppress submission, and use com
       }
     }
   }
-  const source = read('app.js');
-  assert.doesNotMatch(source, /fetch\(|XMLHttpRequest|sendBeacon|formResponse|buy\.stripe|submitOrder|openPayment/);
+  assert.equal(s.requests.length, 0);
+  assert.equal(s.get('co-google-form'), null);
+  assert.equal(s.opened.length, 0);
+});
+
+function blur(s, id, value) {
+  if (value !== undefined) s.change(id, value);
+  s.form.dispatchEvent({ type: 'focusout', target: s.get(id) });
+}
+function error(s, id) { return s.get(id + '-error').textContent; }
+
+test('manual Ukraine fields validate on blur, correct live, and localize accessibly', () => {
+  const s = setup();
+  assert.ok(s.form.querySelectorAll('[data-co-field]').every(f => f.getAttribute('aria-invalid') === 'false'));
+  for (const variant of ['physical-UA', 'physical-EN']) {
+    s.select(variant);
+    for (const id of ['co-first-name','co-last-name']) {
+      for (const name of ['Ґанна', 'Єва', 'Ілля', 'Ївга', 'Анна-Марія', "Лук’ян", "Лукʼян", "Лук'ян", 'Олена Марія']) {
+        blur(s, id, name); assert.equal(error(s, id), '', name);
+      }
+      for (const name of ['Anna', 'Олена1', 'Ыва', 'Эва', 'Ёва', 'Ъ', '---', ' ’ ', '   ', 'Олена!']) {
+        blur(s, id, name); assert.ok(error(s, id), name);
+        assert.equal(s.get(id).value, name);
+      }
+      s.translate('EN');
+      assert.equal(error(s, id), id === 'co-first-name' ? 'Enter your first name in Ukrainian.' : 'Enter your last name in Ukrainian.');
+      assert.ok(s.get(id).getAttribute('aria-describedby').includes(id + '-error'));
+      s.change(id, 'Марія');
+      assert.equal(error(s, id), '');
+      assert.equal(s.get(id).getAttribute('aria-invalid'), 'false');
+      s.translate('UA');
+    }
+    for (const phone of ['+380501234567', '+380 (50) 123-45-67']) {
+      blur(s, 'co-phone', phone); assert.equal(error(s, 'co-phone'), '');
+    }
+    for (const phone of ['+48123456789', '+38050123456', '+3805012345678', '380501234567', '+38050abc4567', '']) {
+      blur(s, 'co-phone', phone); assert.equal(error(s, 'co-phone'), 'Введіть номер у форматі +380XXXXXXXXX.');
+    }
+    s.change('co-phone', '+380 (50) 123-45-67'); assert.equal(error(s, 'co-phone'), '');
+    for (const email of ['', '   ', 'invalid', 'a@b', 'a b@example.com']) {
+      blur(s, 'co-email', email); assert.ok(error(s, 'co-email'));
+    }
+    blur(s, 'co-email', '  reader@example.com  ');
+    assert.equal(s.get('co-email').value, 'reader@example.com');
+    assert.equal(s.context.co.customer.email, 'reader@example.com');
+    assert.equal(error(s, 'co-email'), '');
+    blur(s, 'co-ua-city', '   '); assert.ok(error(s, 'co-ua-city'));
+    s.change('co-ua-city', 'Київ'); assert.equal(error(s, 'co-ua-city'), '');
+    for (const branch of ['', ' ', '0', '000', '-1', '1.5', 'abc', '1e2', '+25']) {
+      blur(s, 'co-ua-branch', branch); assert.ok(error(s, 'co-ua-branch'), branch);
+    }
+    s.change('co-ua-branch', '25'); assert.equal(error(s, 'co-ua-branch'), '');
+    blur(s, 'co-comment', ''); assert.equal(error(s, 'co-comment'), '');
+  }
+});
+
+test('switches clear irrelevant errors and summaries while retaining manual values', () => {
+  const s = setup();
+  blur(s, 'co-first-name', 'Anna');
+  blur(s, 'co-last-name', 'Smith');
+  blur(s, 'co-phone', '+48123456789');
+  blur(s, 'co-ua-city', '');
+  blur(s, 'co-ua-branch', '0');
+  s.change('co-country', 'PL');
+  for (const id of ['co-first-name','co-last-name','co-phone','co-ua-city','co-ua-branch']) assert.equal(error(s, id), '');
+  assert.ok(s.get('co-phone-hint').hidden);
+  assert.equal(s.get('co-phone').value, '+48123456789');
+  blur(s, 'co-street', ''); assert.ok(error(s, 'co-street'));
+  s.change('co-country', 'UA'); assert.equal(error(s, 'co-street'), '');
+  s.change('co-ua-city', '<img src=x onerror=alert(1)>');
+  s.change('co-ua-branch', '25');
+  assert.ok(s.get('os-delivery').textContent.includes('<img src=x onerror=alert(1)>'));
+  assert.equal(s.get('os-delivery').children.length, 0);
+  s.translate('EN'); assert.ok(s.get('os-delivery').textContent.includes('Nova Poshta branch number: 25'));
+  blur(s, 'co-first-name'); assert.ok(error(s, 'co-first-name'));
+  s.select('ebook-UA');
+  assert.equal(error(s, 'co-first-name'), '');
+  blur(s, 'co-first-name', 'Anna123'); assert.equal(error(s, 'co-first-name'), '');
+  blur(s, 'co-email', ''); assert.ok(error(s, 'co-email'));
+  assert.equal(s.get('os-delivery').textContent, '');
+  s.select('physical-EN');
+  assert.equal(s.get('co-ua-branch').value, '25');
+  assert.ok(s.get('os-delivery').textContent.includes('25'));
+});
+
+function fillUkraine(s) {
+  for (const [id, value] of Object.entries({
+    'co-first-name': 'Анна-Марія', 'co-last-name': 'Лук’яненко',
+    'co-phone': '+380 (50) 123-45-67', 'co-email': ' reader@example.com ',
+    'co-ua-city': 'Київ', 'co-ua-branch': '25', 'co-comment': 'A & B + #?\nДякую',
+  })) s.change(id, value);
+}
+function assertAnswers(request, expected) {
+  assert.equal(request.options.method, 'POST');
+  assert.equal(request.options.mode, 'no-cors');
+  assert.equal(request.options.credentials, 'omit');
+  assert.ok(request.url.endsWith('/formResponse'));
+  for (const [id, value] of Object.entries(expected)) assert.equal(request.options.body.get('entry.' + id), value);
+}
+
+test('Proceed validates and posts Ukrainian orders for both printed editions without opening a tab', async () => {
+  for (const language of ['UA', 'EN']) {
+    for (const variant of ['physical-UA', 'physical-EN']) {
+      const s = setup(language);
+      await s.proceed();
+      assert.equal(s.requests.length, 0);
+      assert.equal(s.document.activeElement.id, 'co-first-name');
+      fillUkraine(s);
+      s.select(variant);
+      await s.proceed();
+      assert.equal(s.requests.length, 1);
+      assert.ok(s.requests[0].url.includes('1FAIpQLSci-pms-g-hM0PcxCcMgZqMaycDPAwF8oSzfDbIgjMlz-rXRA'));
+      assertAnswers(s.requests[0], {
+        '1010262154': 'Ukraine', '307735541': 'Анна-Марія', '1551863023': 'Лук’яненко',
+        '1061640817': '+380501234567', '2044579426': 'reader@example.com',
+        '778705268': 'Київ', '665549530': '25',
+        '1168496972': `Book: ${variant === 'physical-UA' ? 'Ukrainian' : 'English'} — Printed Book\n\nA & B + #?\nДякую`,
+      });
+      assert.equal(s.opened.length, 0);
+      assert.ok(s.get('co-pay').disabled);
+      assert.equal(s.get('co-phone').value, '+380 (50) 123-45-67');
+      await s.proceed();
+      assert.equal(s.requests.length, 1);
+      s.translate('EN');
+      assert.match(s.get('co-payment-note').textContent, /confirmation is pending/);
+      s.change('co-comment', 'new comment');
+      s.change('co-comment', 'A & B + #?\nДякую');
+      await s.proceed();
+      assert.equal(s.requests.length, 1, 'unchanged request is not sent twice');
+    }
+  }
+});
+
+test('international printed orders map every country and address field to the international table', async () => {
+  for (const variant of ['physical-UA', 'physical-EN']) {
+    const s = setup('EN');
+    s.select(variant);
+    s.change('co-country', 'PL');
+    for (const [id, value] of Object.entries({
+      'co-first-name': 'Anna', 'co-last-name': 'Reader', 'co-phone': '+48 (000) 000-000',
+      'co-email': ' reader@example.com ', 'co-city': 'Test city', 'co-street': 'A & B Street',
+      'co-building': '12A', 'co-apartment': '7', 'co-address2': 'Care of Test',
+      'co-postal': '00-001', 'co-region': 'Test region', 'co-comment': 'Test only',
+    })) s.change(id, value);
+    s.context.co.ukrainianDelivery.city = 'Stale Ukrainian city';
+    for (const country of s.context.CHECKOUT.countries.filter(c => c.code !== 'UA')) {
+      s.change('co-country', country.code);
+      const count = s.requests.length;
+      await s.proceed();
+      assert.equal(s.requests.length, count + 1);
+      const request = s.requests.at(-1);
+      assert.ok(request.url.includes('1FAIpQLSfA2TMQS8GFPAEKAcxgBxgPwTEfGP7XO8s8cHvOLc2pMqOl1w'));
+      assertAnswers(request, {
+        '1010262154': country.label.EN, '307735541': 'Anna', '1551863023': 'Reader',
+        '1061640817': '+48 (000) 000-000', '2044579426': 'reader@example.com',
+        '778705268': 'Test city', '665549530': 'A & B Street', '1168496972': '12A',
+        '720517786': 'Apartment: 7; Care of Test', '1057800513': '00-001', '252242427': 'Test region',
+        '1159017944': `Book: ${variant === 'physical-UA' ? 'Ukrainian' : 'English'} — Printed Book\n\nTest only`,
+      });
+      assert.ok(!request.options.body.toString().includes('Stale'));
+    }
+    const count = s.requests.length;
+    s.change('co-street', ' ');
+    await s.proceed();
+    assert.equal(s.requests.length, count);
+    assert.equal(s.document.activeElement.id, 'co-street');
+  }
+});
+
+test('e-books require first name and email and send only those fields to the dedicated form', async () => {
+  for (const language of ['UA', 'EN']) {
+    const s = setup(language);
+    fillUkraine(s);
+    s.select('ebook-UA');
+    s.change('co-first-name', ' ');
+    await s.proceed();
+    assert.equal(s.requests.length, 0);
+    assert.equal(s.document.activeElement.id, 'co-first-name');
+    s.change('co-first-name', ' Anna ');
+    s.change('co-email', 'invalid');
+    await s.proceed();
+    assert.equal(s.requests.length, 0);
+    assert.equal(s.document.activeElement.id, 'co-email');
+    s.change('co-email', ' reader@example.com ');
+    await s.proceed();
+    assert.equal(s.requests.length, 1);
+    const request = s.requests[0];
+    assert.equal(request.url, 'https://docs.google.com/forms/d/e/1FAIpQLScMnV-1EPRyRzQu14mLskPbQNe2lI2omj1C5uZv6ZAOq1csFw/formResponse');
+    assertAnswers(request, {
+      '307735541': 'Anna', '2044579426': 'reader@example.com',
+    });
+    assert.deepEqual([...request.options.body.keys()].sort(), ['entry.2044579426', 'entry.307735541']);
+    assert.equal(s.opened.length, 0);
+  }
+});
+
+test('submission locks duplicate clicks; edits during sending remain ready for a new submission', async () => {
+  let finish;
+  const s = setup('EN', () => {}, () => new Promise(resolve => { finish = resolve; }));
+  fillUkraine(s);
+  const pending = s.proceed();
+  assert.ok(s.get('co-pay').disabled);
+  assert.equal(s.form.getAttribute('aria-busy'), 'true');
+  assert.equal(s.get('co-pay').textContent, 'Sending…');
+  await s.proceed();
+  assert.equal(s.requests.length, 1);
+  s.change('co-comment', 'Changed while sending');
+  assert.ok(s.get('co-pay').disabled);
+  finish({ type: 'opaque' });
+  await pending;
+  assert.equal(s.get('co-pay').disabled, false);
+  assert.equal(s.form.getAttribute('aria-busy'), 'false');
+});
+
+test('network errors retain details and allow an explicit retry without claiming success', async () => {
+  let fail = true;
+  const s = setup('EN', () => {}, async () => {
+    if (fail) throw new TypeError('Network unavailable');
+    return { type: 'opaque' };
+  });
+  fillUkraine(s);
+  await s.proceed();
+  assert.match(s.get('co-payment-note').textContent, /couldn’t confirm/);
+  assert.equal(s.get('co-pay').disabled, false);
+  assert.equal(s.get('co-email').value, 'reader@example.com');
+  fail = false;
+  await s.proceed();
+  assert.equal(s.requests.length, 2);
+  assert.equal(s.get('co-pay').textContent, 'Request sent');
 });
