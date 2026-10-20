@@ -48,6 +48,8 @@ class Element {
   addEventListener(name, callback) { (this.listeners[name] ||= []).push(callback); }
   dispatchEvent(event) { return Promise.all((this.listeners[event.type] || []).map(listener => listener(event))); }
   focus() { this.owner.activeElement = this; }
+  showModal() { this.open = true; }
+  close() { this.open = false; this.dispatchEvent({ type: 'close' }); }
 }
 for (const key of ['hidden', 'disabled', 'required', 'checked']) {
   Object.defineProperty(Element.prototype, key, {
@@ -90,8 +92,10 @@ function setup(language = 'UA', configure = () => {}, submit = async () => ({ ty
   const document = documentFromHTML(read('index.html'));
   const opened = [];
   const requests = [];
-  const window = { open(...args) { opened.push(args); }, localStorage: { setItem() { throw Error('Personal data must not be persisted'); } }, location: { assign() { throw Error('Payment redirect'); } } };
-  const context = vm.createContext({ document, window, Lang: { get: () => language }, Intl, URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
+  const copied = [];
+  const navigator = { clipboard: { async writeText(value) { copied.push(value); } } };
+  const window = { crypto: require('node:crypto').webcrypto, open(...args) { opened.push(args); }, localStorage: { setItem() { throw Error('Personal data must not be persisted'); } }, location: { assign() { throw Error('Payment redirect'); } } };
+  const context = vm.createContext({ document, window, navigator, Lang: { get: () => language }, Intl, URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
     fetch(url, options) { requests.push({ url, options }); return submit(url, options); } });
   vm.runInContext(read('checkout-content.js'), context);
   const source = read('app.js');
@@ -111,7 +115,7 @@ function setup(language = 'UA', configure = () => {}, submit = async () => ({ ty
   const select = value => form.dispatchEvent({ type: 'change', target: { name: 'variant', value, dataset: {} } });
   const translate = code => { language = code; document.dispatchEvent({ type: 'sitelangchange' }); };
   const active = () => form.querySelectorAll('[data-co-field]').filter(field => !field.disabled).map(field => field.id).sort();
-  return { context, document, form, get, change, select, translate, active, opened, requests, proceed: () => form.dispatchEvent({ type: 'submit', preventDefault() {} }) };
+  return { context, document, form, get, change, select, translate, active, opened, requests, copied, proceed: () => form.dispatchEvent({ type: 'submit', preventDefault() {} }) };
 }
 
 test('exactly three native-radio variants with existing prices and no English e-book', () => {
@@ -147,11 +151,12 @@ test('both printed books support Ukraine and international addresses independent
   }
 });
 
-test('e-book requires first name and email; no shipping summary', () => {
+test('e-book requires name, surname and email; no shipping summary', () => {
   const s = setup();
   s.select('ebook-UA');
-  assert.deepEqual(s.active(), ['co-email','co-first-name']);
+  assert.deepEqual(s.active(), ['co-email','co-first-name','co-last-name']);
   assert.ok(s.get('co-email').required);
+  assert.ok(s.get('co-last-name').required);
   assert.equal(s.get('co-first-name').required, true);
   assert.ok(s.get('os-delivery-row').hidden);
   assert.equal(s.get('os-delivery').textContent, '');
@@ -375,7 +380,8 @@ test('Proceed validates and posts Ukrainian orders for both printed editions wit
         '1168496972': `Book: ${variant === 'physical-UA' ? 'Ukrainian' : 'English'} — Printed Book\n\nA & B + #?\nДякую`,
       });
       assert.equal(s.opened.length, 0);
-      assert.ok(s.get('co-pay').disabled);
+      assert.equal(s.get('co-pay').disabled, false);
+      assert.ok(s.get('payment-dialog').open);
       assert.equal(s.get('co-phone').value, '+380 (50) 123-45-67');
       await s.proceed();
       assert.equal(s.requests.length, 1);
@@ -425,7 +431,7 @@ test('international printed orders map every country and address field to the in
   }
 });
 
-test('e-books require first name and email and send only those fields to the dedicated form', async () => {
+test('e-books require surname for payment and send order ID, first name and email to their form', async () => {
   for (const language of ['UA', 'EN']) {
     const s = setup(language);
     fillUkraine(s);
@@ -440,6 +446,11 @@ test('e-books require first name and email and send only those fields to the ded
     assert.equal(s.requests.length, 0);
     assert.equal(s.document.activeElement.id, 'co-email');
     s.change('co-email', ' reader@example.com ');
+    s.change('co-last-name', ' ');
+    await s.proceed();
+    assert.equal(s.requests.length, 0);
+    assert.equal(s.document.activeElement.id, 'co-last-name');
+    s.change('co-last-name', 'Reader');
     await s.proceed();
     assert.equal(s.requests.length, 1);
     const request = s.requests[0];
@@ -447,7 +458,9 @@ test('e-books require first name and email and send only those fields to the ded
     assertAnswers(request, {
       '307735541': 'Anna', '2044579426': 'reader@example.com',
     });
-    assert.deepEqual([...request.options.body.keys()].sort(), ['entry.2044579426', 'entry.307735541']);
+    assert.deepEqual([...request.options.body.keys()].sort(), ['entry.2044579426', 'entry.307735541', 'entry.777020657']);
+    assert.equal(request.options.body.get('entry.777020657'), s.get('payment-order-id').textContent);
+    assert.equal(s.get('payment-surname').textContent, 'Reader');
     assert.equal(s.opened.length, 0);
   }
 });
@@ -460,6 +473,7 @@ test('submission locks duplicate clicks; edits during sending remain ready for a
   assert.ok(s.get('co-pay').disabled);
   assert.equal(s.form.getAttribute('aria-busy'), 'true');
   assert.equal(s.get('co-pay').textContent, 'Sending…');
+  assert.ok(!s.get('payment-dialog').open);
   await s.proceed();
   assert.equal(s.requests.length, 1);
   s.change('co-comment', 'Changed while sending');
@@ -479,10 +493,105 @@ test('network errors retain details and allow an explicit retry without claiming
   fillUkraine(s);
   await s.proceed();
   assert.match(s.get('co-payment-note').textContent, /couldn’t confirm/);
+  assert.ok(!s.get('payment-dialog').open);
   assert.equal(s.get('co-pay').disabled, false);
   assert.equal(s.get('co-email').value, 'reader@example.com');
   fail = false;
   await s.proceed();
   assert.equal(s.requests.length, 2);
-  assert.equal(s.get('co-pay').textContent, 'Request sent');
+  assert.equal(s.get('co-pay').textContent, 'View payment details');
+  assert.equal(s.requests[0].options.body.get('entry.1246459960'), s.requests[1].options.body.get('entry.1246459960'));
+  assert.ok(s.get('payment-dialog').open);
+});
+
+
+test('every destination receives a unique ID matching the popup and exact transfer reference', async () => {
+  const ids = new Set();
+  for (const mode of ['ukraine', 'international', 'ebook']) {
+    const s = setup('EN');
+    fillUkraine(s);
+    if (mode === 'ebook') s.select('ebook-UA');
+    if (mode === 'international') {
+      s.change('co-country', 'PL');
+      for (const id of ['co-city', 'co-street', 'co-building']) s.change(id, 'Test');
+    }
+    await s.proceed();
+    const entry = { ukraine: '1246459960', international: '581507591', ebook: '777020657' }[mode];
+    const id = s.requests[0].options.body.get('entry.' + entry);
+    assert.match(id, /^[A-Z]{2}[0-9]{4}-Лук’яненко$/);
+    assert.ok(!ids.has(id)); ids.add(id);
+    assert.equal(s.get('payment-order-id').textContent, id);
+    assert.equal(s.get('payment-reference').textContent, id);
+    assert.equal(s.get('payment-account').textContent, '27 1600 1462 1805 9774 5000 0001');
+    assert.match(s.get('payment-dialog').textContent, /Alona Kovalenko/);
+    assert.match(s.get('payment-dialog').textContent, /PPABPLPKXXX/);
+    assert.match(s.get('payment-dialog').textContent, /BNP Paribas/);
+    await s.get('payment-close').dispatchEvent({ type: 'click' });
+    assert.equal(s.get('payment-dialog').open, false);
+    assert.equal(s.document.activeElement.id, 'co-pay');
+    await s.proceed();
+    assert.equal(s.requests.length, 1);
+    assert.ok(s.get('payment-dialog').open);
+    assert.equal(s.get('payment-order-id').textContent, id);
+    s.translate('UA');
+    assert.equal(s.get('payment-title').textContent, 'Реквізити для оплати');
+    assert.equal(s.get('payment-dialog').lang, 'uk');
+    assert.equal(s.get('payment-reference').textContent, id);
+    s.change('co-last-name', 'Коваленко');
+    await s.proceed();
+    assert.equal(s.requests.length, 2);
+    assert.notEqual(s.get('payment-order-id').textContent, id);
+    assert.equal(s.get('payment-surname').textContent, 'Коваленко');
+  }
+});
+
+test('copy buttons use the displayed account and reference and handle clipboard failure', async () => {
+  const s = setup('EN');
+  fillUkraine(s);
+  await s.proceed();
+  const buttons = s.get('payment-dialog').querySelectorAll('[data-payment-copy]');
+  for (const button of buttons) await button.dispatchEvent({ type: 'click' });
+  assert.deepEqual(s.copied, [s.get('payment-account').textContent, s.get('payment-reference').textContent]);
+  assert.equal(s.get('payment-copy-status').textContent, 'Copied');
+  s.context.navigator.clipboard.writeText = async () => { throw new Error('Unavailable'); };
+  await buttons[0].dispatchEvent({ type: 'click' });
+  assert.match(s.get('payment-copy-status').textContent, /copy it manually/);
+});
+
+test('payment reference uses the submitted surname even if the form changes while sending', async () => {
+  let finish;
+  const s = setup('EN', () => {}, () => new Promise(resolve => { finish = resolve; }));
+  fillUkraine(s);
+  const pending = s.proceed();
+  s.change('co-last-name', 'Коваленко');
+  finish({ type: 'opaque' });
+  await pending;
+  assert.equal(s.get('payment-surname').textContent, 'Лук’яненко');
+  assert.equal(s.get('payment-order-id').textContent, s.requests[0].options.body.get('entry.1246459960'));
+  assert.equal(s.get('co-pay').textContent, 'Proceed to Payment');
+});
+
+
+test('short IDs preserve leading zeros and surname, avoid local collisions, and remain stable on retry', async () => {
+  const s = setup('EN');
+  const values = [0, 0, 12345];
+  s.context.window.crypto = { getRandomValues(array) {
+    assert.ok(values.length, 'unexpected ID regeneration');
+    array[0] = values.shift();
+    return array;
+  } };
+  fillUkraine(s);
+  s.select('ebook-UA');
+  s.change('co-last-name', ' Smith-Jones ');
+  await s.proceed();
+  assert.equal(s.get('payment-order-id').textContent, 'AA0000-Smith-Jones');
+  assert.equal(s.get('payment-reference').textContent, 'AA0000-Smith-Jones');
+  assert.equal(s.requests[0].options.body.get('entry.777020657'), 'AA0000-Smith-Jones');
+  await s.proceed();
+  assert.equal(s.requests.length, 1);
+  s.change('co-email', 'another@example.com');
+  await s.proceed();
+  assert.equal(s.get('payment-order-id').textContent, 'AB2345-Smith-Jones');
+  assert.equal(s.requests[1].options.body.get('entry.777020657'), 'AB2345-Smith-Jones');
+  assert.equal(values.length, 0);
 });

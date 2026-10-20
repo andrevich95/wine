@@ -17,12 +17,12 @@
     cover: "assets/cover.png",
     ebookOrderForm: {
       url: "https://docs.google.com/forms/d/e/1FAIpQLScMnV-1EPRyRzQu14mLskPbQNe2lI2omj1C5uZv6ZAOq1csFw/viewform",
-      entries: { firstName: "307735541", email: "2044579426" },
+      entries: { orderId: "777020657", firstName: "307735541", email: "2044579426" },
     },
     ukraineOrderForm: {
       url: "https://docs.google.com/forms/d/e/1FAIpQLSci-pms-g-hM0PcxCcMgZqMaycDPAwF8oSzfDbIgjMlz-rXRA/viewform",
       entries: {
-        country: "1010262154", firstName: "307735541", lastName: "1551863023",
+        orderId: "1246459960", country: "1010262154", firstName: "307735541", lastName: "1551863023",
         phone: "1061640817", email: "2044579426", city: "778705268",
         branch: "665549530", comment: "1168496972",
       },
@@ -30,7 +30,7 @@
     internationalOrderForm: {
       url: "https://docs.google.com/forms/d/e/1FAIpQLSfA2TMQS8GFPAEKAcxgBxgPwTEfGP7XO8s8cHvOLc2pMqOl1w/viewform",
       entries: {
-        country: "1010262154", firstName: "307735541", lastName: "1551863023",
+        orderId: "581507591", country: "1010262154", firstName: "307735541", lastName: "1551863023",
         phone: "1061640817", email: "2044579426", city: "778705268",
         street: "665549530", building: "1168496972", address2: "720517786",
         postal: "1057800513", region: "252242427", comment: "1159017944",
@@ -794,7 +794,7 @@
   }
 
   /* ------------------------------------------------------------------------
-     Checkout — validate and submit to the existing response tables. No payment integration.
+     Checkout — submit order details and show manual bank-transfer instructions.
      ------------------------------------------------------------------------ */
 
   var coForm = document.getElementById("co-form");
@@ -812,17 +812,71 @@
     var coCountry = document.getElementById("co-country");
     var coPay = document.getElementById("co-pay");
     var orderState = "idle";
-    var sentPayloads = new Set();
+    // In-memory records keep the same ID on retries and when reopening payment.
+    var orders = new Map();
+    var usedOrderIds = new Set();
+    var paymentOrder = null;
+    var paymentDialog = document.getElementById("payment-dialog");
     var orderRevision = 0;
 
     function renderOrderStatus() {
-      coPay.disabled = orderState === "sending" || orderState === "sent" || !hasPrice(currentVariant());
+      coPay.disabled = orderState === "sending" || !hasPrice(currentVariant());
       coPay.textContent = t(orderState === "sending" ? "orderSending" : orderState === "sent" ? "orderSent" : "pay");
       coForm.setAttribute("aria-busy", String(orderState === "sending"));
       document.getElementById("co-payment-note").textContent = t(
-        orderState === "sent" ? "orderSentNote" : orderState === "error" ? "orderError" : "paymentUnavailable"
+        orderState === "sent" ? "orderSentNote" : orderState === "error" ? "orderError" : "paymentInstructions"
       );
     }
+
+    function createOrderId(surname) {
+      // Two A–Z letters and four digits: 6,760,000 prefixes per surname.
+      // Reject biased random values and IDs already allocated in this page.
+      // Cross-session uniqueness would require a shared server-side registry.
+      var combinations = 26 * 26 * 10000;
+      var limit = Math.floor(4294967296 / combinations) * combinations;
+      var random = new Uint32Array(1);
+      var id;
+      do {
+        do { window.crypto.getRandomValues(random); } while (random[0] >= limit);
+        var value = random[0] % combinations;
+        var letters = Math.floor(value / 10000);
+        id = String.fromCharCode(65 + Math.floor(letters / 26), 65 + letters % 26)
+          + String(value % 10000).padStart(4, "0") + "-" + surname;
+      } while (usedOrderIds.has(id));
+      usedOrderIds.add(id);
+      return id;
+    }
+
+    function renderPaymentDetails() {
+      if (!paymentOrder) return;
+      paymentDialog.lang = Lang.get() === "EN" ? "en" : "uk";
+      document.getElementById("payment-order-id").textContent = paymentOrder.id;
+      document.getElementById("payment-surname").textContent = paymentOrder.surname;
+      document.getElementById("payment-reference").textContent = paymentOrder.id;
+    }
+
+    function showPaymentDetails(order) {
+      paymentOrder = order;
+      renderPaymentDetails();
+      document.getElementById("payment-copy-status").textContent = "";
+      if (!paymentDialog.open) paymentDialog.showModal();
+    }
+
+    document.getElementById("payment-close").addEventListener("click", function () {
+      paymentDialog.close();
+    });
+    paymentDialog.addEventListener("close", function () { coPay.focus(); });
+    paymentDialog.querySelectorAll("[data-payment-copy]").forEach(function (button) {
+      button.addEventListener("click", async function () {
+        var value = document.getElementById(button.dataset.paymentCopy).textContent;
+        try {
+          await navigator.clipboard.writeText(value);
+          document.getElementById("payment-copy-status").textContent = t("paymentCopied");
+        } catch (error) {
+          document.getElementById("payment-copy-status").textContent = t("paymentCopyError");
+        }
+      });
+    });
 
     function resetOrderStatus() {
       orderRevision += 1;
@@ -1017,6 +1071,8 @@
         el.placeholder = t(el.dataset.i18nPlaceholder);
       });
       renderCheckout();
+      renderPaymentDetails();
+      document.getElementById("payment-copy-status").textContent = "";
     }
 
     function updateField(event) {
@@ -1052,7 +1108,7 @@
     });
     coForm.addEventListener("submit", async function (event) {
       event.preventDefault();
-      if (orderState === "sending" || orderState === "sent" || !hasPrice(currentVariant())) return;
+      if (orderState === "sending" || !hasPrice(currentVariant())) return;
       var mode = deliveryMode();
       var firstInvalid = null;
       coForm.querySelectorAll("[data-co-field]").forEach(function (field) {
@@ -1098,10 +1154,22 @@
       Object.keys(answers).forEach(function (key) {
         body.set("entry." + formConfig.entries[key], answers[key]);
       });
-      var payloadKey = endpoint + "?" + body.toString();
-      if (sentPayloads.has(payloadKey)) {
+      // Include surname even for the e-book form, which has no surname column.
+      var payloadKey = JSON.stringify([endpoint, body.toString(), co.customer.lastName.trim(), variant.id, variant.price, variant.currency]);
+      var order = orders.get(payloadKey);
+      if (!order) {
+        order = {
+          id: createOrderId(co.customer.lastName.trim()),
+          surname: co.customer.lastName.trim(),
+          sent: false,
+        };
+        orders.set(payloadKey, order);
+      }
+      body.set("entry." + formConfig.entries.orderId, order.id);
+      if (order.sent) {
         orderState = "sent";
         renderOrderStatus();
+        showPaymentDetails(order);
         return;
       }
       var submittedRevision = orderRevision;
@@ -1118,8 +1186,9 @@
           body: body, signal: controller.signal,
         });
         if (response.type !== "opaque" && !response.ok) throw new Error("Order submission failed");
-        sentPayloads.add(payloadKey);
+        order.sent = true;
         orderState = orderRevision === submittedRevision ? "sent" : "idle";
+        showPaymentDetails(order);
       } catch (error) {
         orderState = "error";
       } finally {
