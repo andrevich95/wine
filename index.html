@@ -499,10 +499,11 @@
       </footer>
     </div>
 
-    <dialog class="payment-dialog" id="payment-dialog" aria-labelledby="payment-title" aria-describedby="payment-intro">
+    <dialog class="payment-dialog" id="payment-dialog" aria-labelledby="payment-title" aria-describedby="payment-delivery-note payment-intro">
       <button type="button" class="payment-dialog__close" id="payment-close" data-i18n-aria="paymentClose" aria-label="Закрити">×</button>
       <p class="payment-dialog__eyebrow" data-i18n="paymentEyebrow"></p>
       <h2 id="payment-title" data-i18n="paymentTitle"></h2>
+      <p class="payment-dialog__delivery-note" id="payment-delivery-note" data-i18n="paymentDeliveryNote"></p>
       <p id="payment-intro" data-i18n="paymentIntro"></p>
       <dl class="payment-dialog__details">
         <div><dt data-i18n="paymentRecipient"></dt><dd>Alona Kovalenko</dd></div>
@@ -523,7 +524,6 @@
       </div>
       <p class="payment-dialog__status" id="payment-copy-status" role="status" aria-live="polite"></p>
       <p class="payment-dialog__note" data-i18n="paymentNote"></p>
-      <p class="payment-dialog__note" data-i18n="paymentDeliveryNote"></p>
     </dialog>
 
     <script src="book-content.js" defer></script>
